@@ -55,6 +55,16 @@ window.THEMES = {
     label: '☕ Mocha',
     fonts: { body: 'Lato', mono: 'Fira Code', heading: 'Playfair Display' },
     vars: { bg:'#1C1917', surface:'#292524', border:'#3C3835', text:'#E7E5E4', primary:'#FB923C' }
+  },
+  'midnight-terminal': {
+    label: '🌌 Midnight Terminal',
+    fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Inter' },
+    vars: { bg:'#0B1020', surface:'#141B2D', border:'#26324D', text:'#E6EDF7', primary:'#58A6FF' }
+  },
+  'neon-ember': {
+    label: '🔥 Neon Ember',
+    fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Inter' },
+    vars: { bg:'#0F0A0A', surface:'#1A1212', border:'#332222', text:'#FFF2E8', primary:'#FF7A45' }
   }
 };
 
@@ -104,7 +114,6 @@ window.applyTheme = async function applyTheme(themeId) {
     const fHead = heading.replace(/ /g, '+');
     
     fontsStyle.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=${fBody}:wght@400;500;600;700&family=${fMono}:wght@400;500;600&family=${fHead}:wght@600;700;800&display=swap');
       body, html, .fh-input, .fh-btn, .fh-label { font-family: '${body}', sans-serif; }
       .mono, .fh-input[type="number"], .tabular-nums { font-family: '${mono}', monospace; }
       h1, h2, h3, .fh-card-title, .theme-heading-font { font-family: '${heading}', sans-serif; }
