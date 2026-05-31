@@ -1,7 +1,31 @@
 # FoneHisab — Offline Desktop POS
 
-A production-grade offline Point-of-Sale and inventory manager for mobile phone retail shops.
-Built with **Electron + Vite + Tailwind CSS v3 + better-sqlite3**.
+A premium, production-grade offline Point-of-Sale and inventory manager specifically designed for mobile phone retail shops. Built with **Electron + Vite + Vanilla CSS (Custom Design System) + better-sqlite3**.
+
+![FoneHisab Interface](https://via.placeholder.com/1000x600.png?text=FoneHisab+POS)
+
+---
+
+## Key Features
+
+- **Dynamic Dashboard**: Real-time sales metrics, weekly revenue charts (SVG), low stock alerts, and quick actions.
+- **Advanced POS System**:
+  - Lightning-fast barcode scanner support (via keyboard input buffering).
+  - Smart customer auto-suggest by Name or Phone number.
+  - Complex tax calculations including Standard GST (18%) and Margin Scheme (for used phones).
+  - Cart management with editable quantities and stock validation.
+- **Customer Ledger & Credit Tracking**:
+  - Automatically profiles walk-in customers and returning customers.
+  - Tracks overall purchases and active Credit balances.
+  - **Partial Payment Engine**: Log partial upfront payments on credit invoices and track subsequent installments with a full audit log of payment modes (Cash, UPI, Card).
+- **Inventory Management**: Track "New Phone", "Used Phone", "Accessory", and "Repair Service" stock with detailed purchase history logging.
+- **Expense Tracker**: Keep a running ledger of operational expenses (Rent, Utilities, Salaries) with monthly totals.
+- **Security & Licensing**: 
+  - Master Password protection for the entire application.
+  - Machine-Lock Fingerprinting: App is tied to the hardware via HMAC-SHA256 licensing (requires `license.lic`).
+- **Premium Theming Engine**:
+  - Built-in Themes: 🌑 Dark, ☀️ Light, ⚡ Cyberpunk, ❄️ Nord, and 🌙 Midnight.
+  - Dynamically changes CSS variables, body fonts, and monospace fonts instantly.
 
 ---
 
@@ -13,8 +37,7 @@ Built with **Electron + Vite + Tailwind CSS v3 + better-sqlite3**.
 | npm         | 9+       |
 | Windows     | 10 / 11  |
 
-> Linux/macOS can run the dev server but the `.exe` build target requires Windows
-> (or a Windows cross-compile environment).
+> Linux/macOS can run the dev server but the `.exe` build target requires Windows (or a Windows cross-compile environment).
 
 ---
 
@@ -31,8 +54,7 @@ npx electron-rebuild
 npm run dev
 ```
 
-The app opens automatically. Hot-reload works for renderer changes.
-Electron main process changes require a full restart.
+The app opens automatically. Hot-reload works for renderer changes. Electron main process changes require a full restart.
 
 ---
 
@@ -48,26 +70,6 @@ Output: `dist-installer/FoneHisab Setup x.x.x.exe`
 > **Before building**, replace `assets/icon.ico` with a real
 > **256 × 256 pixel `.ico` file** (multi-resolution recommended: 16/32/48/256 px).
 > A missing or invalid icon will cause electron-builder to fail.
-> Free tools: [IcoFX](https://icofx.ro), [convertio.co](https://convertio.co/png-ico/).
-
----
-
-## First Run
-
-1. No password is set by default — the app opens directly to the **Billing** screen.
-2. Go to **Settings → Shop Information** and fill in your shop name, address, and GSTIN.
-3. Go to **Inventory → New Item** to add your first product.
-4. Start billing from the **Billing** screen.
-
----
-
-## Setting a Master Password
-
-1. Open **Settings → Security → Set / Change Password**.
-2. Enter and confirm your password. It is stored as a SHA-256 hash — never in plain text.
-3. On next launch, a full-screen lock overlay will appear before the app loads.
-
-To remove the password: set an empty password (the lock screen is skipped when the stored hash is blank).
 
 ---
 
@@ -89,34 +91,6 @@ To open it manually: use [DB Browser for SQLite](https://sqlitebrowser.org/).
 
 ---
 
-## Project Structure
-
-```
-fonehisab/
-├── main.js               # Electron main process (IPC, SQLite, window)
-├── preload.js            # Context bridge (window.api.db)
-├── vite.config.js
-├── tailwind.config.js
-├── assets/
-│   └── icon.ico          # ← Replace with your 256×256 .ico before building
-├── src/
-│   ├── index.html        # Shell HTML
-│   ├── main.js           # Frontend entry, router, shell, global helpers
-│   ├── styles/
-│   │   └── main.css      # @tailwind base/components/utilities
-│   ├── db/
-│   │   ├── schema.sql    # CREATE TABLE IF NOT EXISTS (idempotent)
-│   │   └── init.js       # Fetches schema.sql, calls window.api.db.init()
-│   └── screens/
-│       ├── pos.js        # Billing / POS screen
-│       ├── inventory.js  # Inventory, stock-in, returns
-│       ├── reports.js    # GSTR-1 export, JSON backup, summary stats
-│       └── settings.js   # Shop info, tax config, theme, security, data
-└── dist/                 # Vite build output (auto-generated)
-```
-
----
-
 ## Tax Calculation Reference
 
 | Scheme         | Formula |
@@ -130,14 +104,27 @@ Margin scheme applies **only** to Used Phones and must be toggled per line item.
 
 ---
 
-## Common Issues
+## Architecture Overview
 
-| Problem | Fix |
-|---------|-----|
-| `better-sqlite3` fails to load | Run `npx electron-rebuild` after `npm install` |
-| White screen on launch | Check DevTools console; usually a Vite path issue |
-| Print window blocked | Allow pop-ups for `file://` in browser/Electron settings |
-| `icon.ico` build error | Replace `assets/icon.ico` with a valid `.ico` file |
-| DB locked / EBUSY | WAL mode is enabled by default; restart the app |
-
----
+```text
+fonehisab/
+├── main.js               # Electron main process (IPC, Hardware Fingerprint, Window)
+├── preload.js            # Context bridge (window.api.db)
+├── vite.config.js
+├── src/
+│   ├── index.html        # Shell HTML
+│   ├── main.js           # Frontend entry, Router, Theme Engine, Licensing Modal
+│   ├── styles/
+│   │   └── main.css      # Custom CSS variables, themes, utilities, components
+│   ├── db/
+│   │   ├── schema.sql    # Idempotent DB schema (sales, items, customers, expenses, customer_payments)
+│   └── screens/
+│       ├── dashboard.js  # Sales metrics, Charts, Alerts
+│       ├── pos.js        # Billing, Cart, Auto-suggest, Checkout
+│       ├── inventory.js  # Stock management
+│       ├── customers.js  # Ledger, Partial Payments resolution
+│       ├── expenses.js   # Monthly operational expense logging
+│       ├── reports.js    # GSTR-1 export, JSON backup
+│       └── settings.js   # Shop branding, Themes, Security
+└── dist/                 # Vite build output (auto-generated)
+```
