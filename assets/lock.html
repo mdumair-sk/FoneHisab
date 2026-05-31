@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FoneHisab - Activation Required</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
+
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      background: #0D0D0D; color: #E0E0E0;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    
+    /* Draggable header to allow moving the frameless window */
+    #header {
+      height: 40px;
+      -webkit-app-region: drag;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 10px;
+    }
+
+    #close-btn {
+      -webkit-app-region: no-drag;
+      background: transparent; border: none; color: #E0E0E0;
+      font-size: 20px; cursor: pointer; padding: 4px 8px; opacity: 0.5;
+    }
+    #close-btn:hover { opacity: 1; }
+
+    #container {
+      padding: 10px 40px 40px;
+      display: flex; flex-direction: column; flex: 1;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 24px; color: #00FFB2;
+      margin: 0 0 8px 0; letter-spacing: 0.02em;
+    }
+
+    p { font-size: 13px; opacity: 0.7; margin: 0 0 20px 0; line-height: 1.5; }
+
+    .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5; margin-bottom: 6px; }
+
+    .fingerprint-box {
+      background: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 6px;
+      padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      word-break: break-all; color: #00FFB2; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+
+    .btn {
+      background: #00FFB2; color: #0D0D0D; border: none; border-radius: 6px;
+      padding: 12px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #2A2A2A; color: #E0E0E0; padding: 8px 12px; font-size: 11px;
+    }
+    
+    textarea {
+      width: 100%; height: 120px; background: #1A1A1A; border: 1px solid #2A2A2A;
+      border-radius: 6px; padding: 12px; color: #E0E0E0; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; resize: none; margin-bottom: 8px; box-sizing: border-box;
+    }
+    textarea:focus { outline: 1px solid #00FFB2; border-color: transparent; }
+
+    #error-msg {
+      color: #FF4444; font-size: 12px; min-height: 16px; margin-bottom: 16px;
+    }
+    #reason-msg {
+      color: #FF8C00; font-size: 12px; margin-bottom: 16px; display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <button id="close-btn" onclick="window.close()">×</button>
+  </div>
+  <div id="container">
+    <h1>Software Activation</h1>
+    <p>This installation of FoneHisab is locked to this machine. Please provide the machine fingerprint to your developer to receive a valid license.</p>
+    
+    <div id="reason-msg"></div>
+
+    <div class="label">Machine Fingerprint</div>
+    <div class="fingerprint-box">
+      <span id="fingerprint-text">Loading...</span>
+      <button class="btn btn-secondary" id="copy-btn">Copy</button>
+    </div>
+
+    <div class="label">Paste License JSON</div>
+    <textarea id="license-input" placeholder='{"machine_id": "...", "sig": "..."}'></textarea>
+
+    <div id="error-msg"></div>
+
+    <button class="btn" id="activate-btn" style="width: 100%;">Activate FoneHisab</button>
+  </div>
+
+  <script>
+    window.lockAPI.onReason((reason) => {
+      const el = document.getElementById('reason-msg');
+      if (reason) {
+        el.textContent = 'Reason: ' + reason;
+        el.style.display = 'block';
+      }
+    });
+
+    let fingerprint = '';
+    
+    // Load fingerprint
+    window.lockAPI.getFingerprint().then(fp => {
+      fingerprint = fp;
+      document.getElementById('fingerprint-text').textContent = fp;
+    });
+
+    // Copy action
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      navigator.clipboard.writeText(fingerprint);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+
+    // Activate action
+    document.getElementById('activate-btn').addEventListener('click', async () => {
+      const val = document.getElementById('license-input').value.trim();
+      const err = document.getElementById('error-msg');
+      const btn = document.getElementById('activate-btn');
+      
+      if (!val) { err.textContent = 'Please paste your license JSON.'; return; }
+      err.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+
+      const res = await window.lockAPI.activate(val);
+      if (res.valid) {
+        btn.style.background = '#00FFB2';
+        btn.textContent = 'Activated! Restarting...';
+      } else {
+        err.textContent = res.reason || 'Invalid license.';
+        btn.disabled = false;
+        btn.textContent = 'Activate FoneHisab';
+      }
+    });
+  </script>
+</body>
+</html>

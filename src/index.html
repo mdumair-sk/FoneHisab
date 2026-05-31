@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoneHisab</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+  <style>
+    /* ── Theme variable sets ─────────────────────────────────── */
+    :root,
+    [data-theme="light"] {
+      --color-bg:       #FFFFFF;
+      --color-surface:  #F5F5F5;
+      --color-border:   #D1D5DB;
+      --color-text:     #111827;
+      --color-primary:  #0ea5e9;
+    }
+
+    [data-theme="dark"] {
+      --color-bg:       #0D0D0D;
+      --color-surface:  #1A1A1A;
+      --color-border:   #2A2A2A;
+      --color-text:     #E0E0E0;
+      --color-primary:  #38bdf8;
+    }
+
+    [data-theme="cyberpunk"] {
+      --color-bg:       #0D0D0D;
+      --color-surface:  #1A1A1A;
+      --color-border:   #2A2A2A;
+      --color-text:     #E0E0E0;
+      --color-primary:  #00FFB2;
+    }
+
+    /* Apply CSS variables to base elements */
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+  <div id="app"></div>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
