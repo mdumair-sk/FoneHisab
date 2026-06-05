@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FoneHisab - Activation Required</title>
+  <title>Phone Zone - Activation Required</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
 
@@ -87,7 +87,7 @@
   </div>
   <div id="container">
     <h1>Software Activation</h1>
-    <p>This installation of FoneHisab is locked to this machine. Please provide the machine fingerprint to your developer to receive a valid license.</p>
+    <p>This installation of Phone Zone is locked to this machine. Please provide the machine fingerprint to your developer to receive a valid license.</p>
     
     <div id="reason-msg"></div>
 
@@ -102,7 +102,7 @@
 
     <div id="error-msg"></div>
 
-    <button class="btn" id="activate-btn" style="width: 100%;">Activate FoneHisab</button>
+    <button class="btn" id="activate-btn" style="width: 100%;">Activate Phone Zone</button>
   </div>
 
   <script>
@@ -148,7 +148,7 @@
       } else {
         err.textContent = res.reason || 'Invalid license.';
         btn.disabled = false;
-        btn.textContent = 'Activate FoneHisab';
+        btn.textContent = 'Activate Phone Zone';
       }
     });
   </script>

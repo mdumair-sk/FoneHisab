@@ -2,6 +2,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Dashboard / Home Screen
 
+import { icons } from '../utils/icons.js';
+
 function esc(v) {
   return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -64,8 +66,8 @@ export async function renderDashboard(container) {
           </div>
         </div>
         <div style="display: flex; gap: 12px; margin-bottom: 2px;">
-          <button class="fh-btn fh-btn-ghost" onclick="window.__showScreen('inventory')">📦 Add Stock</button>
-          <button class="fh-btn fh-btn-primary" onclick="window.__showScreen('pos')">➕ New Sale</button>
+          <button class="fh-btn fh-btn-ghost" onclick="window.__showScreen('inventory')">${icons.inventory(14)} Add Stock</button>
+          <button class="fh-btn fh-btn-primary" onclick="window.__showScreen('pos')">${icons.plus(14)} New Sale</button>
         </div>
       </div>
       
@@ -166,7 +168,9 @@ export async function renderDashboard(container) {
         <div style="display: flex; flex-direction: column; gap: 24px;">
           <!-- Chart -->
           <div class="fh-card">
-            <div class="fh-card-title">📈 Last 7 Days Revenue</div>
+            <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+              ${icons.trendingUp(14)} Last 7 Days Revenue
+            </div>
             <div style="margin-top: 20px; height: 120px;">
               ${generateBarChartSVG(chartData, 600, 120)}
             </div>
@@ -174,7 +178,9 @@ export async function renderDashboard(container) {
           
           <!-- Top Items -->
           <div class="fh-card">
-            <div class="fh-card-title">🔥 Top 5 Items This Month</div>
+            <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+              ${icons.flame(14)} Top 5 Items This Month
+            </div>
             ${topItems.length === 0 ? '<div style="opacity: 0.5; font-size: 12px;">No sales this month yet.</div>' : `
               <div style="display: flex; flex-direction: column; gap: 12px;">
                 ${topItems.map((ti, idx) => `
@@ -192,7 +198,9 @@ export async function renderDashboard(container) {
         <div style="display: flex; flex-direction: column; gap: 24px;">
           <!-- Low Stock -->
           <div class="fh-card" style="${lowStock.length > 0 ? 'border: 1px solid #FF8C00; background: rgba(255, 140, 0, 0.03);' : ''}">
-            <div class="fh-card-title" style="${lowStock.length > 0 ? 'color: #FF8C00;' : ''}">⚠ Low Stock Alerts</div>
+            <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; ${lowStock.length > 0 ? 'color: #FF8C00;' : ''}">
+              ${icons.alert(14)} Low Stock Alerts
+            </div>
             ${lowStock.length === 0 ? '<div style="opacity: 0.5; font-size: 12px;">All items are sufficiently stocked.</div>' : `
               <div style="display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto;">
                 ${lowStock.map(ls => `

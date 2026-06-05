@@ -2,6 +2,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Customer Ledger Screen
 
+import { icons } from '../utils/icons.js';
+
 function esc(v) {
   return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -13,10 +15,10 @@ function fmt(n) {
   });
 }
 
-function openModal(html) {
+function openModal(html, maxWidth = '600px') {
   const backdrop = document.createElement('div');
   backdrop.className = 'fh-modal-backdrop';
-  backdrop.innerHTML = `<div class="fh-modal" style="max-width:600px;width:94%;">${html}</div>`;
+  backdrop.innerHTML = `<div class="fh-modal" style="max-width:${maxWidth};width:94%;">${html}</div>`;
   document.body.appendChild(backdrop);
   backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
   return backdrop;
@@ -33,7 +35,10 @@ export async function renderCustomers(container) {
           </div>
         </div>
         <div style="position: relative; width: 300px; margin-bottom: 2px;">
-          <input type="text" id="cust-search" class="fh-input" placeholder="🔍 Search customers..." style="width: 100%;" />
+          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; align-items: center; pointer-events: none;">
+            ${icons.search(14)}
+          </span>
+          <input type="text" id="cust-search" class="fh-input" placeholder="Search customers..." style="width: 100%; padding-left: 34px;" />
         </div>
       </div>
 
@@ -92,7 +97,7 @@ async function fetchAndRenderCustomers(container, searchQuery = '') {
     }
 
     tbody.innerHTML = customers.map(c => `
-      <tr class="cust-row" data-name="${esc(c.name)}" style="cursor: pointer; border-bottom: 1px solid var(--color-border); transition: background 0.15s;">
+      <tr class="cust-row fh-table-row" data-name="${esc(c.name)}" style="cursor: pointer; border-bottom: 1px solid var(--color-border);">
         <td style="padding: 14px 20px; font-weight: 600;">${esc(c.name)}</td>
         <td style="padding: 14px 20px; font-variant-numeric: tabular-nums; opacity: 0.8;">${esc(c.phone) || '-'}</td>
         <td style="padding: 14px 20px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">₹${fmt(c.total_purchases)}</td>
@@ -103,8 +108,6 @@ async function fetchAndRenderCustomers(container, searchQuery = '') {
     `).join('');
 
     tbody.querySelectorAll('.cust-row').forEach(tr => {
-      tr.addEventListener('mouseover', () => tr.style.background = 'rgba(255,255,255,0.03)');
-      tr.addEventListener('mouseout', () => tr.style.background = 'transparent');
       tr.addEventListener('click', () => showCustomerDetails(tr.dataset.name));
     });
 
@@ -127,7 +130,7 @@ async function showCustomerDetails(customerName) {
 
     const modal = openModal(`
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin: 0; font-family: 'Syne', sans-serif; font-size: 20px;">History: ${esc(customerName)}</h2>
+        <div class="fh-card-title" style="margin: 0; font-size: 16px;">History: ${esc(customerName)}</div>
         <button class="fh-btn fh-btn-ghost" onclick="this.closest('.fh-modal-backdrop').remove()">Close</button>
       </div>
 
@@ -174,7 +177,7 @@ async function showCustomerDetails(customerName) {
           </table>
         `}
       </div>
-    `);
+    `, '800px');
 
     // Attach Record Payment listeners
     modal.querySelectorAll('.btn-record-pay').forEach(btn => {
@@ -183,7 +186,7 @@ async function showCustomerDetails(customerName) {
         const maxDue = parseFloat(btn.dataset.due);
         
         const payModal = openModal(`
-          <h3 style="margin-top:0;">Record Payment</h3>
+          <div class="fh-card-title" style="margin-top:0;">Record Payment</div>
           <div class="fh-field">
             <label class="fh-label">Amount Paying</label>
             <input type="number" id="pay-amt" class="fh-input" value="${maxDue}" min="0.01" max="${maxDue}" step="0.01" />
@@ -200,7 +203,7 @@ async function showCustomerDetails(customerName) {
             <button class="fh-btn fh-btn-ghost" id="pay-cancel">Cancel</button>
             <button class="fh-btn fh-btn-primary" id="pay-confirm">Save Payment</button>
           </div>
-        `);
+        `, '480px');
         
         payModal.querySelector('#pay-cancel').addEventListener('click', () => payModal.remove());
         payModal.querySelector('#pay-confirm').addEventListener('click', async () => {

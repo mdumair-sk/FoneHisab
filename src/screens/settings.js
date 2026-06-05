@@ -1,3 +1,5 @@
+import { icons } from '../utils/icons.js';
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function loadSettings() {
@@ -24,7 +26,7 @@ function openModal(html, onMount) {
   backdrop.className = 'fh-modal-backdrop';
   backdrop.innerHTML = `<div class="fh-modal">${html}</div>`;
   document.body.appendChild(backdrop);
-  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+  // Backdrop click does NOT dismiss — anti-data-loss
   if (onMount) onMount(backdrop);
   return backdrop;
 }
@@ -34,12 +36,14 @@ function openModal(html, onMount) {
 function sectionShopInfo(s) {
   return `
     <div class="fh-card">
-      <div class="fh-card-title">🏪 Shop Information</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.store(14)} Shop Information
+      </div>
 
       <div class="fh-field">
         <label class="fh-label" for="shop_name">Shop Name</label>
         <input id="shop_name" class="fh-input" type="text"
-          placeholder="e.g. Rizwan Mobile Centre"
+          placeholder="e.g. Phone Zone"
           value="${esc(s.shop_name || '')}"
           data-key="shop_name" />
       </div>
@@ -50,6 +54,23 @@ function sectionShopInfo(s) {
           placeholder="Full shop address…"
           data-key="shop_address"
           style="resize:vertical;">${esc(s.shop_address || '')}</textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="fh-field">
+          <label class="fh-label" for="shop_email">Email ID</label>
+          <input id="shop_email" class="fh-input" type="email"
+            placeholder="e.g. shop@phonezone.in"
+            value="${esc(s.shop_email || '')}"
+            data-key="shop_email" />
+        </div>
+        <div class="fh-field">
+          <label class="fh-label" for="shop_phone">Phone Number</label>
+          <input id="shop_phone" class="fh-input" type="text"
+            placeholder="e.g. 9876543210"
+            value="${esc(s.shop_phone || '')}"
+            data-key="shop_phone" />
+        </div>
       </div>
 
       <div class="fh-field" style="margin-bottom:0;">
@@ -66,7 +87,9 @@ function sectionShopInfo(s) {
 function sectionTax(s) {
   return `
     <div class="fh-card">
-      <div class="fh-card-title">🧮 Tax Configuration</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.percent(14)} Tax Configuration
+      </div>
       <div class="fh-field" style="margin-bottom:0;">
         <label class="fh-label" for="default_gst_rate">Default GST Rate (%)</label>
         <div style="display:flex;align-items:center;gap:12px;">
@@ -79,6 +102,54 @@ function sectionTax(s) {
             CGST + SGST split equally
           </span>
         </div>
+      </div>
+    </div>`;
+}
+
+function sectionBank(s) {
+  return `
+    <div class="fh-card">
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.bank(14)} Bank Configuration
+      </div>
+      <div class="fh-field">
+        <label class="fh-label" for="bank_name">Bank Name</label>
+        <input id="bank_name" class="fh-input" type="text"
+          placeholder="e.g. HDFC BANK"
+          value="${esc(s.bank_name || '')}"
+          data-key="bank_name" />
+      </div>
+      <div class="fh-field">
+        <label class="fh-label" for="bank_acc_name">Account Name</label>
+        <input id="bank_acc_name" class="fh-input" type="text"
+          placeholder="e.g. PHONE ZONE"
+          value="${esc(s.bank_acc_name || '')}"
+          data-key="bank_acc_name" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="fh-field">
+          <label class="fh-label" for="bank_acc_no">Account Number</label>
+          <input id="bank_acc_no" class="fh-input" type="text"
+            placeholder="e.g. 50200076937705"
+            value="${esc(s.bank_acc_no || '')}"
+            data-key="bank_acc_no"
+            style="font-variant-numeric:tabular-nums;letter-spacing:0.04em;" />
+        </div>
+        <div class="fh-field">
+          <label class="fh-label" for="bank_ifsc">IFSC Code</label>
+          <input id="bank_ifsc" class="fh-input" type="text"
+            placeholder="e.g. HDFC0008059"
+            value="${esc(s.bank_ifsc || '')}"
+            data-key="bank_ifsc"
+            style="letter-spacing:0.04em;" />
+        </div>
+      </div>
+      <div class="fh-field" style="margin-bottom:0;">
+        <label class="fh-label" for="bank_branch">Branch</label>
+        <input id="bank_branch" class="fh-input" type="text"
+          placeholder="e.g. Jaripatka Nagpur"
+          value="${esc(s.bank_branch || '')}"
+          data-key="bank_branch" />
       </div>
     </div>`;
 }
@@ -135,12 +206,14 @@ function sectionTheme(s) {
 
   return `
     <div class="fh-card">
-      <div class="fh-card-title">🎨 Theme</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.palette(14)} Theme
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
         ${cardsHtml}
       </div>
-      <button class="fh-btn fh-btn-ghost" id="btn-import-theme" style="width:100%;justify-content:center;border-style:dashed;">
-        ➕ Import Custom Theme
+      <button class="fh-btn fh-btn-ghost" id="btn-import-theme" style="width:100%;justify-content:center;border-style:dashed;display:flex;align-items:center;gap:8px;">
+        ${icons.plus(14)} Import Custom Theme
       </button>
     </div>`;
 }
@@ -148,7 +221,9 @@ function sectionTheme(s) {
 function sectionSecurity() {
   return `
     <div class="fh-card">
-      <div class="fh-card-title">🔐 Security</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.lock(14)} Security
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
           <div style="font-size:13px;margin-bottom:4px;">Master Password</div>
@@ -156,8 +231,8 @@ function sectionSecurity() {
             Required to authorize destructive operations. Stored as SHA-256.
           </div>
         </div>
-        <button class="fh-btn fh-btn-ghost" id="btn-change-pw">
-          🔑 Set / Change Password
+        <button class="fh-btn fh-btn-ghost" id="btn-change-pw" style="display:flex;align-items:center;gap:8px;">
+          ${icons.lock(14)} Set / Change Password
         </button>
       </div>
     </div>`;
@@ -166,7 +241,9 @@ function sectionSecurity() {
 function sectionData() {
   return `
     <div class="fh-card">
-      <div class="fh-card-title">💾 Data Maintenance</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.database(14)} Data Maintenance
+      </div>
       <div style="display:flex;flex-direction:column;gap:16px;">
 
         <!-- Backup -->
@@ -176,11 +253,11 @@ function sectionData() {
             <div style="font-size:11px;opacity:0.4;">Full export or import of all tables as a JSON file.</div>
           </div>
           <div style="display:flex;gap:12px;">
-            <button class="fh-btn fh-btn-ghost" id="btn-import-backup" style="border-color:#F59E0B;color:#F59E0B;">
-              ⬆ Import Backup
+            <button class="fh-btn fh-btn-ghost" id="btn-import-backup" style="border-color:#F59E0B;color:#F59E0B;display:flex;align-items:center;gap:8px;">
+              ${icons.upload(14)} Import Backup
             </button>
-            <button class="fh-btn fh-btn-primary" id="btn-backup">
-              ⬇ Download Backup
+            <button class="fh-btn fh-btn-primary" id="btn-backup" style="display:flex;align-items:center;gap:8px;">
+              ${icons.download(14)} Download Backup
             </button>
           </div>
         </div>
@@ -192,8 +269,8 @@ function sectionData() {
             <div style="font-size:13px;margin-bottom:3px;">Clear All Sales Data</div>
             <div style="font-size:11px;opacity:0.4;">Deletes all invoices and line items. Inventory untouched.</div>
           </div>
-          <button class="fh-btn fh-btn-warn" id="btn-clear-sales">
-            🗑 Clear Sales
+          <button class="fh-btn fh-btn-warn" id="btn-clear-sales" style="display:flex;align-items:center;gap:8px;">
+            ${icons.trash(14)} Clear Sales
           </button>
         </div>
 
@@ -203,8 +280,8 @@ function sectionData() {
             <div style="font-size:13px;margin-bottom:3px;">Factory Reset</div>
             <div style="font-size:11px;opacity:0.4;">Wipes <em>all</em> data from every table. Cannot be undone.</div>
           </div>
-          <button class="fh-btn fh-btn-danger" id="btn-factory-reset">
-            ⚠ Factory Reset
+          <button class="fh-btn fh-btn-danger" id="btn-factory-reset" style="display:flex;align-items:center;gap:8px;">
+            ${icons.alert(14)} Factory Reset
           </button>
         </div>
 
@@ -220,16 +297,8 @@ function esc(str) {
 // ── Event wiring ──────────────────────────────────────────────────────────────
 
 function wireBlurSave(container) {
-  container.querySelectorAll('[data-key]').forEach(el => {
-    const save = async () => {
-      await saveSetting(el.dataset.key, el.value);
-      if (el.dataset.key === 'shop_name' && typeof window.refreshNavBranding === 'function') {
-        window.refreshNavBranding();
-      }
-    };
-    el.addEventListener('blur', save);
-    el.addEventListener('change', save); // for <select>
-  });
+  // Explicit save model: settings are NOT auto-saved on blur.
+  // The "Save System Settings" button handles persistence.
 }
 
 function wireThemeChips(container) {
@@ -245,12 +314,14 @@ function wireThemeChips(container) {
   if (importBtn) {
     importBtn.addEventListener('click', () => {
       const m = openModal(`
-        <div class="fh-card-title" style="margin-bottom:16px;">➕ Import Custom Theme</div>
+        <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:16px;">
+          ${icons.plus(14)} Import Custom Theme
+        </div>
         <div style="margin-bottom:12px;font-size:12px;opacity:0.7;">Paste theme JSON below:</div>
         <textarea id="custom-theme-json" class="fh-input" rows="8" style="font-family:monospace;font-size:11px;" placeholder='{
   "id": "mytheme",
   "label": "My Theme",
-  "fonts": { "body": "Inter", "mono": "Fira Code", "heading": "Syne" },
+  "fonts": { "body": "Inter", "mono": "Fira Code", "heading": "Inter" },
   "vars": { "bg": "#111", "surface": "#222", "border": "#333", "text": "#eee", "primary": "#f00" }
 }'></textarea>
         <div id="theme-err" style="color:#FF4444;font-size:11px;min-height:16px;margin-top:8px;"></div>
@@ -286,7 +357,9 @@ function wireThemeChips(container) {
 function wirePasswordModal(container) {
   container.querySelector('#btn-change-pw').addEventListener('click', () => {
     const modal = openModal(`
-      <div class="fh-card-title" style="margin-bottom:20px;">🔑 Change Master Password</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:20px;">
+        ${icons.lock(14)} Change Master Password
+      </div>
 
       <div class="fh-field">
         <label class="fh-label">New Password</label>
@@ -344,7 +417,7 @@ function wireBackup(container) {
   container.querySelector('#btn-backup').addEventListener('click', async () => {
     const btn = container.querySelector('#btn-backup');
     btn.disabled = true;
-    btn.textContent = '⏳ Exporting…';
+    btn.innerHTML = `${icons.spinner(14)} Exporting…`;
     try {
       const res = await window.api.db.backup();
       if (!res.ok) throw new Error(res.error);
@@ -353,7 +426,7 @@ function wireBackup(container) {
         const blob = new Blob([res.json], { type: 'application/json' });
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
-        a.href = url; a.download = `fonehisab-backup-${Date.now()}.json`;
+        a.href = url; a.download = `phone-zone-backup-${Date.now()}.json`;
         a.click(); URL.revokeObjectURL(url);
       }
       btn.textContent = '✓ Saved';
@@ -365,7 +438,7 @@ function wireBackup(container) {
     } finally {
       setTimeout(() => {
         btn.disabled = false;
-        btn.textContent = '⬇ Download Backup';
+        btn.innerHTML = `${icons.download(14)} Download Backup`;
         btn.style.background = '';
       }, 2500);
     }
@@ -429,7 +502,7 @@ function wireImportBackup(container) {
 
     importBtn.disabled = true;
     importBtn.style.opacity = '0.65';
-    importBtn.innerHTML = '⏳ Importing…';
+    importBtn.innerHTML = `${icons.spinner(14)} Importing…`;
 
     const imported = { items: 0, purchases: 0, sales: 0, sale_items: 0, settings: 0 };
     const errors   = [];
@@ -504,8 +577,8 @@ function wireImportBackup(container) {
     backdrop.className = 'fh-modal-backdrop';
     backdrop.innerHTML = `
       <div class="fh-modal" style="max-width:500px;width:94%;">
-        <div class="fh-card-title" style="color:#F59E0B;margin-bottom:18px;">
-          ⬆ Import Complete
+        <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; color:#F59E0B;margin-bottom:18px;">
+          ${icons.upload(14)} Import Complete
         </div>
 
         <div style="
@@ -543,11 +616,7 @@ function wireImportBackup(container) {
       if (content) renderSettings(content);
     });
     backdrop.addEventListener('click', e => { 
-      if (e.target === backdrop) { 
-        backdrop.remove(); 
-        const content = document.getElementById('content');
-        if (content) renderSettings(content);
-      } 
+      // Backdrop click does NOT dismiss — anti-data-loss
     });
 
     if (totalImported > 0) {
@@ -559,7 +628,9 @@ function wireImportBackup(container) {
 function wireClearSales(container) {
   container.querySelector('#btn-clear-sales').addEventListener('click', () => {
     openModal(`
-      <div class="fh-card-title" style="margin-bottom:16px;color:#FF8C00;">🗑 Clear All Sales Data</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:16px;color:#FF8C00;">
+        ${icons.trash(14)} Clear All Sales Data
+      </div>
       <p style="font-size:13px;opacity:0.75;margin-bottom:20px;line-height:1.6;">
         This will permanently delete all invoices and line items.
         Inventory stock levels will <strong>not</strong> be affected.
@@ -595,7 +666,9 @@ function wireFactoryReset(container) {
     const storedHash = settings.master_password || await sha256hex('admin123');
 
     openModal(`
-      <div class="fh-card-title" style="margin-bottom:16px;color:#FF4444;">⚠ Factory Reset</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:16px;color:#FF4444;">
+        ${icons.alert(14)} Factory Reset
+      </div>
       <p style="font-size:13px;opacity:0.75;margin-bottom:20px;line-height:1.6;">
         This will erase <strong>all data</strong> including inventory, purchases, sales, and settings.
         This action is irreversible.
@@ -645,34 +718,84 @@ function wireFactoryReset(container) {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 export async function renderSettings(container) {
-  container.innerHTML = `
-    <div style="padding:32px;max-width:720px;margin:0 auto;">
-      <div style="margin-bottom:28px;">
-        <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: var(--color-text); letter-spacing: -0.02em;">Settings</h1>
-        <div style="font-size: 11px; font-weight: 600; color: var(--color-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 6px; opacity: 0.8;">
-          APP CONFIGURATION & DATA MANAGEMENT
+  try {
+    container.innerHTML = `
+      <div style="padding:32px;max-width:720px;margin:0 auto;">
+        <div style="margin-bottom:28px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: var(--color-text); letter-spacing: -0.02em;">Settings</h1>
+          <div style="font-size: 11px; font-weight: 600; color: var(--color-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 6px; opacity: 0.8;">
+            APP CONFIGURATION & DATA MANAGEMENT
+          </div>
         </div>
-      </div>
-      <div id="settings-body">
-        <div style="opacity:0.35;font-size:12px;padding:40px 0 0;">Loading…</div>
-      </div>
-    </div>`;
+        <div id="settings-body">
+          <div style="opacity:0.35;font-size:12px;padding:40px 0 0;">Loading…</div>
+        </div>
+      </div>`;
 
-  const s = await loadSettings();
-  const body = container.querySelector('#settings-body');
+    const s = await loadSettings();
+    const body = container.querySelector('#settings-body');
 
-  body.innerHTML =
-    sectionShopInfo(s) +
-    sectionTax(s) +
-    sectionTheme(s) +
-    sectionSecurity() +
-    sectionData();
+    body.innerHTML =
+      sectionShopInfo(s) +
+      sectionTax(s) +
+      sectionBank(s) +
+      sectionTheme(s) +
+      sectionSecurity() +
+      sectionData();
 
-  wireBlurSave(body);
-  wireThemeChips(body);
-  wirePasswordModal(body);
-  wireBackup(body);
-  wireImportBackup(body);
-  wireClearSales(body);
-  wireFactoryReset(body);
+    wireBlurSave(body);
+    wireThemeChips(body);
+    wirePasswordModal(body);
+    wireBackup(body);
+    wireImportBackup(body);
+    wireClearSales(body);
+    wireFactoryReset(body);
+
+    const saveBtn = document.createElement('div');
+    saveBtn.style.cssText = 'position:sticky;bottom:0;padding:16px 0;background:linear-gradient(transparent,var(--color-bg) 30%);z-index:10;';
+    saveBtn.innerHTML = `
+      <button id="btn-save-settings" class="fh-btn fh-btn-primary" style="
+        width:100%;padding:14px;font-size:14px;letter-spacing:0.1em;
+        border-radius:8px;box-shadow:0 4px 20px rgba(0,255,178,0.2);
+        justify-content:center;
+        display:flex;align-items:center;gap:8px;
+      ">${icons.save(14)} Save System Settings</button>
+    `;
+    body.appendChild(saveBtn);
+
+    saveBtn.querySelector('#btn-save-settings').addEventListener('click', async () => {
+      const btn = saveBtn.querySelector('#btn-save-settings');
+      btn.disabled = true;
+      btn.innerHTML = `${icons.spinner(14)} Saving…`;
+
+      // Collect all [data-key] values from the form and save them
+      const fields = body.querySelectorAll('[data-key]');
+      for (const el of fields) {
+        const key = el.dataset.key;
+        const value = el.tagName === 'TEXTAREA' ? el.value : el.value;
+        await saveSetting(key, value);
+      }
+
+      if (typeof window.refreshNavBranding === 'function') {
+        await window.refreshNavBranding();
+      }
+
+      btn.textContent = '✓ Saved';
+      btn.style.background = '#00C896';
+      window.showToast('System settings saved successfully.', 'success');
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `${icons.save(14)} Save System Settings`;
+        btn.style.background = '';
+      }, 2000);
+    });
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `
+      <div style="padding:32px;max-width:720px;margin:0 auto;color:#FF4444;">
+        <h2>Error loading settings</h2>
+        <pre style="background:rgba(255,68,68,0.1);padding:16px;border-radius:6px;overflow:auto;font-family:monospace;">${err.stack || err.message}</pre>
+      </div>`;
+  }
 }

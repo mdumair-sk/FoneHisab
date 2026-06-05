@@ -1,0 +1,32 @@
+END-USER LICENSE AGREEMENT (EULA) FOR PHONE ZONE
+
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE INSTALLING OR USING THIS SOFTWARE.
+
+BY INSTALLING, COPYING, OR OTHERWISE USING THIS SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT.
+
+
+LIMITATION OF LIABILITY & TAX SYSTEM DISCLAIMER
+
+1. AS-IS Software Delivery
+   The software "Phone Zone" is provided "as is" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+2. Calculation Responsibility
+   The final calculation and verification of tax balances (CGST, SGST, Base Margins, and HSN codes) are the sole responsibility of the End-User and their Chartered Accountant (CA). The software provides computational tools as an aid only.
+
+3. Indemnity against Penalties
+   Under no circumstances shall the software developer be liable for any tax penalties, regulatory audits, lost profits, or business interruptions caused by incorrect database outputs, locking errors, or computation mismatch.
+
+4. Liability Cap
+   Financial remedy under any legal claims is strictly capped at the total amount paid by the customer for the software license.
+
+
+ACCEPTANCE
+
+By checking the acceptance checkbox during installation and/or using this software, you acknowledge that:
+
+"I unconditionally accept all terms and disclaimers and agree to independently verify my tax submissions."
+
+If you do not agree to these terms, do not install or use this software.
+
+
+Copyright (c) 2025 Phone Zone. All rights reserved.

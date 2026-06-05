@@ -1,9 +1,10 @@
 // src/screens/reports.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FoneHisab — Financial Exports & Reports Screen
+// Phone Zone — Financial Exports & Reports Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
 import * as XLSX from 'xlsx';
+import { icons } from '../utils/icons.js';
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -277,7 +278,7 @@ function buildGSTR1Workbook(rows) {
     });
 
     const summaryData = [
-      ['FoneHisab — GSTR-1 Summary', '', ''],
+      ['Phone Zone — GSTR-1 Summary', '', ''],
       ['', '', ''],
       ['Total Rows', dataRows.length, ''],
       ['Total Taxable', dataRows.reduce((s, r) => s + r[7], 0), ''],
@@ -303,15 +304,20 @@ function renderSummaryCards(el, summary, modes, startDate, endDate) {
   const modeMap   = {};
   modes.forEach(m => { modeMap[m.payment_mode] = m; });
 
-  const modeIcons = { Cash: '💵', UPI: '📱', Card: '💳', Credit: '📋' };
+  const modeIcons = {
+    Cash: icons.cash(18),
+    UPI: icons.smartphone(18),
+    Card: icons.creditCard(18),
+    Credit: icons.fileText(18)
+  };
 
-  const statCard = (icon, label, value, accent = false) => `
+  const statCard = (iconHtml, label, value, accent = false) => `
     <div style="
       background:var(--color-surface);border:1px solid var(--color-border);
       border-radius:8px;padding:18px 20px;
       ${accent ? `border-color:var(--color-primary);box-shadow:0 0 16px rgba(0,255,178,0.08);` : ''}
     ">
-      <div style="font-size:18px;margin-bottom:8px;">${icon}</div>
+      <div style="margin-bottom:8px; color: var(--color-primary); display: flex; align-items: center;">${iconHtml}</div>
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;
         opacity:0.45;margin-bottom:6px;">${esc(label)}</div>
       <div style="font-size:${accent ? '22px' : '18px'};font-weight:700;
@@ -330,7 +336,7 @@ function renderSummaryCards(el, summary, modes, startDate, endDate) {
         align-items:center;justify-content:space-between;gap:12px;
       ">
         <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:18px;">${modeIcons[mode] ?? '💰'}</span>
+          <span style="color:var(--color-primary); display: flex; align-items: center;">${modeIcons[mode] ?? icons.expenses(18)}</span>
           <div>
             <div style="font-size:12px;font-weight:600;letter-spacing:0.04em;">${mode}</div>
             <div style="font-size:11px;opacity:0.4;">
@@ -351,7 +357,7 @@ function renderSummaryCards(el, summary, modes, startDate, endDate) {
       display:flex;align-items:center;gap:8px;margin-bottom:20px;
       font-size:12px;opacity:0.5;letter-spacing:0.06em;
     ">
-      <span>📅</span>
+      <span style="display: flex; align-items: center; opacity: 0.6;">${icons.calendar(14)}</span>
       <span>${formatDateDisplay(startDate)} — ${formatDateDisplay(endDate)}</span>
       ${summary.total_invoices > 0
         ? `<span style="
@@ -364,11 +370,11 @@ function renderSummaryCards(el, summary, modes, startDate, endDate) {
 
     <!-- Main stats grid -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px;">
-      ${statCard('🧾', 'Total Invoices',      summary.total_invoices)}
-      ${statCard('📊', 'Taxable Value',    `₹${fmt(summary.total_taxable)}`)}
-      ${statCard('🏛', 'Total CGST',       `₹${fmt(summary.total_cgst)}`)}
-      ${statCard('🏛', 'Total SGST',       `₹${fmt(summary.total_sgst)}`)}
-      ${statCard('💰', 'Grand Total Revenue', `₹${fmt(summary.grand_total)}`, true)}
+      ${statCard(icons.billing(18), 'Total Invoices',      summary.total_invoices)}
+      ${statCard(icons.reports(18), 'Taxable Value',    `₹${fmt(summary.total_taxable)}`)}
+      ${statCard(icons.bank(18), 'Total CGST',       `₹${fmt(summary.total_cgst)}`)}
+      ${statCard(icons.bank(18), 'Total SGST',       `₹${fmt(summary.total_sgst)}`)}
+      ${statCard(icons.expenses(18), 'Grand Total Revenue', `₹${fmt(summary.grand_total)}`, true)}
     </div>
 
     <!-- Payment mode breakdown -->
@@ -439,7 +445,9 @@ export async function renderReports(container) {
 
       <!-- Date range + action buttons -->
       <div class="fh-card" style="margin-bottom:24px;">
-        <div class="fh-card-title">📅 Date Range</div>
+        <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+          ${icons.calendar(14)} Date Range
+        </div>
 
         <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
 
@@ -476,18 +484,18 @@ export async function renderReports(container) {
         <!-- Action buttons -->
         <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
           <button id="btn-gstr1" class="fh-btn fh-btn-primary"
-            style="padding:11px 22px;font-size:13px;">
-            📊 Download GSTR-1 Excel
+            style="padding:11px 22px;font-size:13px;display:flex;align-items:center;gap:8px;">
+            ${icons.download(14)} Download GSTR-1 Excel
           </button>
           <button id="btn-backup" class="fh-btn fh-btn-ghost"
-            style="padding:11px 22px;font-size:13px;
+            style="padding:11px 22px;font-size:13px;display:flex;align-items:center;gap:8px;
             border-color:var(--color-primary);color:var(--color-primary);">
-            💾 Download JSON Backup
+            ${icons.download(14)} Download JSON Backup
           </button>
           <button id="btn-import" class="fh-btn fh-btn-ghost"
-            style="padding:11px 22px;font-size:13px;
+            style="padding:11px 22px;font-size:13px;display:flex;align-items:center;gap:8px;
             border-color:#F59E0B;color:#F59E0B;">
-            ⬆ Import Backup
+            ${icons.upload(14)} Import Backup
           </button>
         </div>
         <!-- Hidden file input — triggered programmatically -->
@@ -497,7 +505,9 @@ export async function renderReports(container) {
 
       <!-- Summary stats -->
       <div class="fh-card">
-        <div class="fh-card-title">📈 Summary</div>
+        <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+          ${icons.trendingUp(14)} Summary
+        </div>
         <div id="rep-summary">
           <div style="opacity:0.3;font-size:12px;padding:20px 0;">Loading…</div>
         </div>
@@ -549,7 +559,7 @@ export async function renderReports(container) {
     summaryEl.innerHTML = `
       <div style="opacity:0.3;font-size:12px;padding:20px 0;
         display:flex;align-items:center;gap:8px;">
-        <span style="animation:spin 1s linear infinite;display:inline-block;">⏳</span>
+        <span style="display:flex;align-items:center;">${icons.spinner(14)}</span>
         Loading summary…
       </div>`;
 
@@ -582,7 +592,7 @@ export async function renderReports(container) {
     }
 
     setButtonState(gstr1Btn, 'loading', gstr1OrigHTML);
-    gstr1Btn.innerHTML = '⏳ Generating…';
+    gstr1Btn.innerHTML = `${icons.spinner(14)} Generating…`;
 
     try {
       const rows = await fetchGSTR1Rows(start, end);
@@ -608,7 +618,7 @@ export async function renderReports(container) {
       setButtonState(gstr1Btn, 'success', gstr1OrigHTML);
       showToast(`GSTR-1 exported — ${rows.length} line items.`);
     } catch (e) {
-      console.error('[FoneHisab] GSTR-1 export error:', e);
+      console.error('[Phone Zone] GSTR-1 export error:', e);
       setButtonState(gstr1Btn, 'error', gstr1OrigHTML);
       showToast(`Export failed: ${e.message}`, '#FF4444');
     } finally {
@@ -622,7 +632,7 @@ export async function renderReports(container) {
 
   backupBtn.addEventListener('click', async () => {
     setButtonState(backupBtn, 'loading', backupOrigHTML);
-    backupBtn.innerHTML = '⏳ Exporting…';
+    backupBtn.innerHTML = `${icons.spinner(14)} Exporting…`;
 
     try {
       const result = await window.api.db.backup();
@@ -650,12 +660,12 @@ export async function renderReports(container) {
       }
 
       const blob = new Blob([jsonStr], { type: 'application/json' });
-      triggerDownload(blob, `FoneHisab_Backup_${nowStamp()}.json`);
+      triggerDownload(blob, `PhoneZone_Backup_${nowStamp()}.json`);
 
       setButtonState(backupBtn, 'success', backupOrigHTML);
       showToast('JSON backup downloaded.');
     } catch (e) {
-      console.error('[FoneHisab] Backup error:', e);
+      console.error('[Phone Zone] Backup error:', e);
       setButtonState(backupBtn, 'error', backupOrigHTML);
       showToast(`Backup failed: ${e.message}`, '#FF4444');
     } finally {
@@ -724,7 +734,7 @@ export async function renderReports(container) {
 
     // ── 4. Insert ─────────────────────────────────────────────────────────────
     setButtonState(importBtn, 'loading', importOrigHTML);
-    importBtn.innerHTML = '⏳ Importing…';
+    importBtn.innerHTML = `${icons.spinner(14)} Importing…`;
 
     const imported = { items: 0, purchases: 0, sales: 0, sale_items: 0, settings: 0 };
     const errors   = [];
@@ -734,8 +744,8 @@ export async function renderReports(container) {
       for (const row of (data.items ?? [])) {
         const r = await window.api.db.run(
           `INSERT OR IGNORE INTO items
-             (id, name, category, stock_qty, purchase_price, sell_price, gst_rate, is_margin_scheme)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+             (id, name, category, stock_qty, purchase_price, sell_price, gst_rate, is_margin_scheme, hsn_code)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             row.id            ?? null,
             row.name          ?? '',
@@ -745,6 +755,7 @@ export async function renderReports(container) {
             row.sell_price    ?? 0,
             row.gst_rate      ?? 18,
             row.is_margin_scheme ?? 0,
+            row.hsn_code      ?? '8471',
           ]
         );
         if (r.ok && r.changes > 0) imported.items++;
@@ -800,8 +811,8 @@ export async function renderReports(container) {
         const r = await window.api.db.run(
           `INSERT OR IGNORE INTO sale_items
              (id, sale_id, item_id, item_name, qty, price_per_unit,
-              is_margin_applied, cgst_amount, sgst_amount)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              is_margin_applied, cgst_amount, sgst_amount, imei_number, item_hsn)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             row.id                ?? null,
             row.sale_id           ?? null,
@@ -812,6 +823,8 @@ export async function renderReports(container) {
             row.is_margin_applied ?? 0,
             row.cgst_amount       ?? 0,
             row.sgst_amount       ?? 0,
+            row.imei_number       ?? '',
+            row.item_hsn          ?? '',
           ]
         );
         if (r.ok && r.changes > 0) imported.sale_items++;

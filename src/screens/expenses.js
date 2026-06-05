@@ -2,6 +2,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Expense Tracker Screen
 
+import { icons } from '../utils/icons.js';
+
 function esc(v) {
   return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -42,7 +44,9 @@ export async function renderExpenses(container) {
         </div>
         
         <div class="fh-card">
-          <div class="fh-card-title">💸 Log New Expense</div>
+          <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+            ${icons.expenses(14)} Log New Expense
+          </div>
           
           <div class="fh-field">
             <label class="fh-label">Description</label>

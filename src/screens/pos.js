@@ -1,8 +1,9 @@
 // src/screens/pos.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FoneHisab — Point of Sale (Billing) Screen
+// Phone Zone — Point of Sale (Billing) Screen
 // ─────────────────────────────────────────────────────────────────────────────
 import { printInvoice } from '../utils/print.js';
+import { icons } from '../utils/icons.js';
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ function openModal(html, onMount) {
   backdrop.className = 'fh-modal-backdrop';
   backdrop.innerHTML = `<div class="fh-modal" style="max-width:480px;width:94%;">${html}</div>`;
   document.body.appendChild(backdrop);
-  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+  backdrop.addEventListener('click', e => { /* Backdrop click does NOT dismiss — anti-data-loss */ });
   if (onMount) onMount(backdrop);
   return backdrop;
 }
@@ -137,7 +138,7 @@ async function generateInvoiceNumber() {
 // ── POS State ─────────────────────────────────────────────────────────────────
 
 const pos = {
-  cart:           [],   // [{ item, qty, unitPrice, useMargin }]
+  cart:           [],   // [{ item, qty, unitPrice, useMargin, imei }]
   searchResults:  [],
   customerName:   'Walk-in Customer',
   customerPhone:  '',
@@ -159,6 +160,7 @@ function addToCart(item) {
       qty:       1,
       unitPrice: Number(item.sell_price) || 0,
       useMargin: item.is_margin_scheme === 1 && item.category === 'Used Phone',
+      imei:      '',
     });
   }
 }
@@ -195,9 +197,6 @@ export async function renderPOS(container) {
 
       .pos-search-drop { animation: fhDropIn 0.15s ease; }
 
-      .pos-search-drop::-webkit-scrollbar { width: 4px; }
-      .pos-search-drop::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
-
       .cart-qty-btn {
         width:26px;height:26px;border-radius:4px;border:1px solid var(--color-border);
         background:transparent;color:var(--color-text);cursor:pointer;font-size:14px;
@@ -213,9 +212,6 @@ export async function renderPOS(container) {
         transition:background 0.1s;opacity:0.7;flex-shrink:0;
       }
       .pos-remove-btn:hover { background:rgba(255,68,68,0.12);opacity:1; }
-
-      .pos-right::-webkit-scrollbar { width: 4px; }
-      .pos-right::-webkit-scrollbar-thumb { background: var(--color-border); }
 
       .margin-toggle {
         display:flex;align-items:center;gap:5px;cursor:pointer;
@@ -256,9 +252,12 @@ export async function renderPOS(container) {
         <!-- Search bar -->
         <div style="padding:24px 24px 0;flex-shrink:0;">
           <div style="position:relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; align-items: center; pointer-events: none;">
+              ${icons.search(14)}
+            </span>
             <input id="pos-search" class="fh-input" type="search"
-              placeholder="🔍  Search items by name…"
-              style="padding-left:14px;"
+              placeholder="Search items by name…"
+              style="padding-left:34px;"
               autocomplete="off" />
             <div id="pos-search-drop"
               class="pos-search-drop"
@@ -292,13 +291,17 @@ export async function renderPOS(container) {
 
         <!-- Order summary card -->
         <div class="fh-card" style="flex-shrink:0;">
-          <div class="fh-card-title">🧾 Order Summary</div>
+          <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+            ${icons.billing(14)} Order Summary
+          </div>
           <div id="pos-summary"></div>
         </div>
 
         <!-- Customer details card -->
         <div class="fh-card" style="flex-shrink:0;">
-          <div class="fh-card-title">👤 Customer</div>
+          <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+            ${icons.customers(14)} Customer
+          </div>
 
           <div class="fh-field" style="position:relative;">
             <label class="fh-label">Name</label>
@@ -332,7 +335,9 @@ export async function renderPOS(container) {
 
         <!-- Payment card -->
         <div class="fh-card" style="flex-shrink:0;">
-          <div class="fh-card-title">💳 Payment</div>
+          <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+            ${icons.creditCard(14)} Payment
+          </div>
           <div class="fh-field">
             <label class="fh-label">Mode</label>
             <select id="pos-payment" class="fh-input">
@@ -361,8 +366,9 @@ export async function renderPOS(container) {
           letter-spacing:0.1em;border-radius:8px;
           box-shadow:0 4px 20px rgba(0,255,178,0.2);
           flex-shrink:0;
+          justify-content:center;
         ">
-          🖨 Save &amp; Print Invoice
+          ${icons.print(14)} Save &amp; Print Invoice
         </button>
 
         <!-- Error display -->
@@ -389,17 +395,13 @@ export async function renderPOS(container) {
     searchDrop.innerHTML = results.map(item => {
       const outOfStock = item.stock_qty <= 0;
       return `
-        <div data-item-id="${item.id}"
+        <div data-item-id="${item.id}" class="${!outOfStock ? 'fh-table-row' : ''}"
           style="
             padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
             gap:10px;border-bottom:1px solid var(--color-border);
             cursor:${outOfStock ? 'not-allowed' : 'pointer'};
             opacity:${outOfStock ? '0.38' : '1'};
-            transition:background 0.1s;
-          "
-          ${!outOfStock ? `
-            onmouseover="this.style.background='rgba(0,255,178,0.06)'"
-            onmouseout="this.style.background=''"` : ''}>
+          ">
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:500;
               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">
@@ -459,10 +461,10 @@ export async function renderPOS(container) {
     if (!results.length) { custDrop.style.display = 'none'; return; }
 
     custDrop.innerHTML = results.map(c => `
-      <div data-cust-id="${c.id}" style="
+      <div data-cust-id="${c.id}" class="fh-table-row" style="
         padding:10px 14px;border-bottom:1px solid var(--color-border);
-        cursor:pointer;transition:background 0.1s;
-      " onmouseover="this.style.background='rgba(0,255,178,0.06)'" onmouseout="this.style.background=''">
+        cursor:pointer;
+      ">
         <div style="font-size:13px;font-weight:600;color:var(--color-text);">${esc(c.name)}</div>
         <div style="font-size:11px;opacity:0.6;margin-top:2px;font-variant-numeric:tabular-nums;">
           ${c.phone ? '📞 ' + esc(c.phone) : ''} ${c.gstin ? ' | ' + esc(c.gstin) : ''}
@@ -548,9 +550,9 @@ function renderCart(container) {
     wrap.innerHTML = `
       <div style="
         display:flex;flex-direction:column;align-items:center;justify-content:center;
-        height:180px;opacity:0.2;gap:10px;
+        height:180px;opacity:0.2;gap:16px;
       ">
-        <div style="font-size:36px;">🛒</div>
+        <div style="color:var(--color-text);">${icons.shoppingCart(36)}</div>
         <div style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Cart is empty</div>
       </div>`;
     return;
@@ -595,6 +597,15 @@ function renderCart(container) {
                 ${row.useMargin ? 'checked' : ''} />
               Margin Scheme
             </label>
+          </div>` : ''}
+        ${(row.item.category === 'New Phone' || row.item.category === 'Used Phone') ? `
+          <div style="margin-top:6px;">
+            <input type="text" class="fh-input cart-imei-input" data-idx="${idx}"
+              placeholder="IMEI (15 digits)"
+              value="${esc(row.imei || '')}"
+              maxlength="15"
+              style="font-size:11px;padding:5px 8px;font-variant-numeric:tabular-nums;
+                letter-spacing:0.06em;max-width:180px;" />
           </div>` : ''}
       </td>
 
@@ -707,6 +718,14 @@ function renderCart(container) {
       renderSummary(container);
     });
   });
+
+  // IMEI inputs
+  tbody.querySelectorAll('.cart-imei-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const i = Number(inp.dataset.idx);
+      pos.cart[i].imei = inp.value.trim();
+    });
+  });
 }
 
 // ── Summary renderer ──────────────────────────────────────────────────────────
@@ -814,7 +833,7 @@ async function handleSavePrint(container, settings) {
   // 4. Commit transaction — all db:run calls sequentially
   const btn = container.querySelector('#btn-save-print');
   btn.disabled   = true;
-  btn.textContent = '⏳ Saving…';
+  btn.innerHTML = `${icons.spinner(14)} Saving…`;
 
   try {
     // INSERT sales
@@ -861,8 +880,8 @@ async function handleSavePrint(container, settings) {
       const siRes = await window.api.db.run(`
         INSERT INTO sale_items
           (sale_id, item_id, item_name, qty, price_per_unit,
-           is_margin_applied, cgst_amount, sgst_amount)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+           is_margin_applied, cgst_amount, sgst_amount, imei_number, item_hsn)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           saleId,
           row.item.id,
@@ -872,6 +891,8 @@ async function handleSavePrint(container, settings) {
           row.useMargin ? 1 : 0,
           tax.cgst,
           tax.sgst,
+          row.imei || '',
+          row.item.hsn_code || '',
         ]
       );
       if (!siRes.ok) throw new Error(siRes.error ?? `Failed to insert line item: ${row.item.name}`);
@@ -919,6 +940,7 @@ async function handleSavePrint(container, settings) {
     pos.customerGstin = '';
     pos.paymentMode  = 'Cash';
     pos.amountPaid   = 0;
+    pos.cart.forEach(r => r.imei = '');
 
     renderCart(container);
     renderSummary(container);
@@ -953,6 +975,6 @@ async function handleSavePrint(container, settings) {
     `);
   } finally {
     btn.disabled    = false;
-    btn.textContent = '🖨 Save & Print Invoice';
+    btn.innerHTML = `${icons.print(14)} Save &amp; Print Invoice`;
   }
 }

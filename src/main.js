@@ -1,16 +1,17 @@
 // src/main.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FoneHisab — Frontend entry point, router, shell
+// Phone Zone — Frontend entry point, router, shell
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { initDatabase }    from './db/init.js';
+import { initDatabase } from './db/init.js';
 import { renderDashboard } from './screens/dashboard.js';
-import { renderPOS }       from './screens/pos.js';
+import { renderPOS } from './screens/pos.js';
 import { renderInventory } from './screens/inventory.js';
 import { renderCustomers } from './screens/customers.js';
-import { renderExpenses }  from './screens/expenses.js';
-import { renderReports }   from './screens/reports.js';
-import { renderSettings }  from './screens/settings.js';
+import { renderExpenses } from './screens/expenses.js';
+import { renderReports } from './screens/reports.js';
+import { renderSettings } from './screens/settings.js';
+import { icons } from './utils/icons.js';
 
 // ── Global helpers ────────────────────────────────────────────────────────────
 
@@ -33,38 +34,38 @@ window.getSettings = async function getSettings() {
 window.THEMES = {
   dark: {
     label: '🌑 Dark',
-    fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Syne' },
-    vars: { bg:'#0D0D0D', surface:'#1A1A1A', border:'#2A2A2A', text:'#E0E0E0', primary:'#00FFB2' }
+    fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Inter' },
+    vars: { bg: '#0D0D0D', surface: '#1A1A1A', border: '#2A2A2A', text: '#E0E0E0', primary: '#00FFB2' }
   },
   light: {
     label: '☀️ Light',
-    fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Syne' },
-    vars: { bg:'#F0F4F8', surface:'#FFFFFF', border:'#CBD5E1', text:'#1E293B', primary:'#2563EB' }
+    fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Inter' },
+    vars: { bg: '#FAFAFA', surface: '#FFFFFF', border: '#E2E8F0', text: '#0F172A', primary: '#2563EB' }
   },
   cyberpunk: {
     label: '⚡ Cyberpunk',
     fonts: { body: 'Orbitron', mono: 'Share Tech Mono', heading: 'Orbitron' },
-    vars: { bg:'#0D0D0D', surface:'#111111', border:'#1E1E1E', text:'#E0E0E0', primary:'#00FFB2' }
+    vars: { bg: '#0D0D0D', surface: '#111111', border: '#1E1E1E', text: '#E0E0E0', primary: '#00FFB2' }
   },
   nord: {
     label: '❄️ Nord',
     fonts: { body: 'Nunito', mono: 'JetBrains Mono', heading: 'Nunito' },
-    vars: { bg:'#2E3440', surface:'#3B4252', border:'#434C5E', text:'#ECEFF4', primary:'#88C0D0' }
+    vars: { bg: '#2E3440', surface: '#3B4252', border: '#434C5E', text: '#ECEFF4', primary: '#88C0D0' }
   },
   mocha: {
     label: '☕ Mocha',
     fonts: { body: 'Lato', mono: 'Fira Code', heading: 'Playfair Display' },
-    vars: { bg:'#1C1917', surface:'#292524', border:'#3C3835', text:'#E7E5E4', primary:'#FB923C' }
+    vars: { bg: '#1C1917', surface: '#292524', border: '#3C3835', text: '#E7E5E4', primary: '#FB923C' }
   },
   'midnight-terminal': {
     label: '🌌 Midnight Terminal',
     fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Inter' },
-    vars: { bg:'#0B1020', surface:'#141B2D', border:'#26324D', text:'#E6EDF7', primary:'#58A6FF' }
+    vars: { bg: '#0B1020', surface: '#141B2D', border: '#26324D', text: '#E6EDF7', primary: '#58A6FF' }
   },
   'neon-ember': {
     label: '🔥 Neon Ember',
     fonts: { body: 'Inter', mono: 'JetBrains Mono', heading: 'Inter' },
-    vars: { bg:'#0F0A0A', surface:'#1A1212', border:'#332222', text:'#FFF2E8', primary:'#FF7A45' }
+    vars: { bg: '#0F0A0A', surface: '#1A1212', border: '#332222', text: '#FFF2E8', primary: '#FF7A45' }
   }
 };
 
@@ -76,12 +77,12 @@ window.applyTheme = async function applyTheme(themeId) {
       if (res.ok && res.rows.length) {
         themeObj = JSON.parse(res.rows[0].value);
       }
-    } catch(e) {}
+    } catch (e) { }
   }
-  if (!themeObj) themeObj = window.THEMES.dark;
+  if (!themeObj) themeObj = window.THEMES.light;
 
   document.documentElement.setAttribute('data-theme', themeId);
-  
+
   // Update Variables
   let varsStyle = document.getElementById('fh-theme-vars');
   if (!varsStyle) {
@@ -112,7 +113,7 @@ window.applyTheme = async function applyTheme(themeId) {
     const fBody = body.replace(/ /g, '+');
     const fMono = mono.replace(/ /g, '+');
     const fHead = heading.replace(/ /g, '+');
-    
+
     fontsStyle.textContent = `
       body, html, .fh-input, .fh-btn, .fh-label { font-family: '${body}', sans-serif; }
       .mono, .fh-input[type="number"], .tabular-nums { font-family: '${mono}', monospace; }
@@ -121,7 +122,7 @@ window.applyTheme = async function applyTheme(themeId) {
   }
 
   await window.api.db.run(
-    `INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, 
+    `INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
     ['app_theme', themeId]
   );
 };
@@ -134,13 +135,13 @@ function ensureToastContainer() {
   if (_toastContainer && document.body.contains(_toastContainer)) return _toastContainer;
   _toastContainer = document.createElement('div');
   Object.assign(_toastContainer.style, {
-    position:      'fixed',
-    top:           '20px',
-    right:         '20px',
-    display:       'flex',
+    position: 'fixed',
+    top: '50px',
+    right: '20px',
+    display: 'flex',
     flexDirection: 'column',
-    gap:           '8px',
-    zIndex:        '99999',
+    gap: '8px',
+    zIndex: '99999',
     pointerEvents: 'none',
   });
   document.body.appendChild(_toastContainer);
@@ -149,8 +150,8 @@ function ensureToastContainer() {
 
 const TOAST_COLORS = {
   success: { bg: '#00FFB2', fg: '#0D0D0D' },
-  error:   { bg: '#FF4444', fg: '#FFFFFF' },
-  info:    { bg: '#38bdf8', fg: '#0D0D0D' },
+  error: { bg: '#FF4444', fg: '#FFFFFF' },
+  info: { bg: '#38bdf8', fg: '#0D0D0D' },
   warning: { bg: '#FF8C00', fg: '#0D0D0D' },
 };
 
@@ -161,40 +162,40 @@ const TOAST_COLORS = {
  */
 window.showToast = function showToast(message, type = 'success') {
   const { bg, fg } = TOAST_COLORS[type] ?? TOAST_COLORS.success;
-  const wrap       = ensureToastContainer();
+  const wrap = ensureToastContainer();
 
   const toast = document.createElement('div');
   toast.textContent = message;
   Object.assign(toast.style, {
-    background:    bg,
-    color:         fg,
-    padding:       '10px 18px',
-    borderRadius:  '6px',
-    fontSize:      '12px',
-    fontWeight:    '600',
+    background: bg,
+    color: fg,
+    padding: '10px 18px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '600',
     letterSpacing: '0.05em',
-    boxShadow:     `0 4px 20px ${bg}66`,
-    opacity:       '0',
-    transform:     'translateY(-8px)',
-    transition:    'opacity 0.18s ease, transform 0.18s ease',
+    boxShadow: `0 4px 20px ${bg}66`,
+    opacity: '0',
+    transform: 'translateY(-8px)',
+    transition: 'opacity 0.18s ease, transform 0.18s ease',
     pointerEvents: 'auto',
-    maxWidth:      '320px',
-    lineHeight:    '1.4',
-    fontFamily:    'inherit',
+    maxWidth: '320px',
+    lineHeight: '1.4',
+    fontFamily: 'inherit',
   });
   wrap.appendChild(toast);
 
   // Animate in
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      toast.style.opacity   = '1';
+      toast.style.opacity = '1';
       toast.style.transform = 'translateY(0)';
     });
   });
 
   // Fade out and remove
   const dismiss = () => {
-    toast.style.opacity   = '0';
+    toast.style.opacity = '0';
     toast.style.transform = 'translateY(-8px)';
     setTimeout(() => toast.remove(), 200);
   };
@@ -214,8 +215,8 @@ window.showToast = function showToast(message, type = 'success') {
 window.showConfirm = function showConfirm(
   title,
   message,
-  confirmLabel  = 'Confirm',
-  confirmStyle  = 'danger'
+  confirmLabel = 'Confirm',
+  confirmStyle = 'danger'
 ) {
   return new Promise((resolve) => {
     const backdrop = document.createElement('div');
@@ -248,9 +249,7 @@ window.showConfirm = function showConfirm(
       backdrop.remove();
       resolve(true);
     });
-    backdrop.addEventListener('click', e => {
-      if (e.target === backdrop) { backdrop.remove(); resolve(false); }
-    });
+    // Backdrop click does NOT dismiss — anti-data-loss
   });
 };
 
@@ -263,13 +262,13 @@ function escHtml(v) {
 // ── Nav config ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
-  { id: 'pos',       icon: '🧾', label: 'Billing'   },
-  { id: 'customers', icon: '👥', label: 'Customers' },
-  { id: 'inventory', icon: '📦', label: 'Inventory' },
-  { id: 'expenses',  icon: '💸', label: 'Expenses'  },
-  { id: 'reports',   icon: '📊', label: 'Reports'   },
-  { id: 'settings',  icon: '⚙️', label: 'Settings'  },
+  { id: 'dashboard', icon: icons.home(16), label: 'Dashboard' },
+  { id: 'pos', icon: icons.billing(16), label: 'Billing' },
+  { id: 'customers', icon: icons.customers(16), label: 'Customers' },
+  { id: 'inventory', icon: icons.inventory(16), label: 'Inventory' },
+  { id: 'expenses', icon: icons.expenses(16), label: 'Expenses' },
+  { id: 'reports', icon: icons.reports(16), label: 'Reports' },
+  { id: 'settings', icon: icons.settings(16), label: 'Settings' },
 ];
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -289,13 +288,13 @@ window.__showScreen = function showScreen(name) {
 
   switch (name) {
     case 'dashboard': renderDashboard(content); break;
-    case 'pos':       renderPOS(content);       break;
+    case 'pos': renderPOS(content); break;
     case 'customers': renderCustomers(content); break;
     case 'inventory': renderInventory(content); break;
-    case 'expenses':  renderExpenses(content);  break;
-    case 'reports':   renderReports(content);   break;
-    case 'settings':  renderSettings(content);  break;
-    default:          content.innerHTML = '';
+    case 'expenses': renderExpenses(content); break;
+    case 'reports': renderReports(content); break;
+    case 'settings': renderSettings(content); break;
+    default: content.innerHTML = '';
   }
 };
 
@@ -306,7 +305,7 @@ function injectGlobalStyles() {
   const s = document.createElement('style');
   s.id = 'fh-global-style';
   s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -334,18 +333,28 @@ function injectGlobalStyles() {
     }
     
     [data-theme="light"] {
-      --color-bg:       #F0F4F8;
+      --color-bg:       #FAFAFA;
       --color-surface:  #FFFFFF;
-      --color-border:   #CBD5E1;
-      --color-text:     #1E293B;
+      --color-border:   #E2E8F0;
+      --color-text:     #0F172A;
       --color-primary:  #2563EB;
     }
 
-    /* Sidenav overrides for Light Theme (Dark nav + light content) */
     [data-theme="light"] aside {
       --color-surface:  #1E293B;
       --color-text:     #F1F5F9;
       --color-border:   #334155;
+    }
+
+    /* Table Rows */
+    .fh-table-row {
+      transition: background 0.15s;
+    }
+    .fh-table-row:hover {
+      background: rgba(0, 255, 178, 0.04);
+    }
+    [data-theme="light"] .fh-table-row:hover {
+      background: rgba(37, 99, 235, 0.04);
     }
 
     [data-theme="cyberpunk"] {
@@ -520,7 +529,7 @@ function buildShell() {
             color: var(--color-primary); letter-spacing: 0.02em; line-height: 1.15;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
             overflow: hidden; text-overflow: ellipsis; word-break: break-word; max-width: 210px; transition: font-size 0.2s;">
-            FoneHisab
+            Phone Zone
           </div>
           <div id="nav-shop-sub" class="theme-heading-font" style="
             font-size: 10px; letter-spacing: 0.2em; font-weight: 700;
@@ -576,14 +585,12 @@ function buildShell() {
 window.refreshNavBranding = async function updateNavBranding() {
   const s = await window.getSettings();
   const titleEl = document.getElementById('nav-shop-name');
-  const subEl   = document.getElementById('nav-shop-sub');
+  const subEl = document.getElementById('nav-shop-sub');
   if (!titleEl || !subEl) return;
-  
+
   if (s.shop_name && s.shop_name.trim() !== '') {
     const name = s.shop_name.trim();
     titleEl.textContent = name;
-    subEl.textContent   = 'Powered by FoneHisab';
-    
     // Dynamic scaling for long names
     const len = name.length;
     if (len >= 24) {
@@ -598,8 +605,8 @@ window.refreshNavBranding = async function updateNavBranding() {
       titleEl.style.fontSize = '22px';
     }
   } else {
-    titleEl.textContent = 'FoneHisab';
-    subEl.textContent   = 'Shop Manager';
+    titleEl.textContent = 'Phone Zone';
+    subEl.textContent = 'Shop Manager';
     titleEl.style.fontSize = '22px';
   }
 };
@@ -616,15 +623,15 @@ function showLockScreen(storedHash) {
     const overlay = document.createElement('div');
     overlay.id = 'lock-overlay';
     Object.assign(overlay.style, {
-      position:       'fixed',
-      inset:          '0',
-      background:     'var(--color-bg)',
-      zIndex:         '99998',
-      display:        'flex',
-      alignItems:     'center',
+      position: 'fixed',
+      inset: '0',
+      background: 'var(--color-bg)',
+      zIndex: '99998',
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
-      flexDirection:  'column',
-      animation:      'fhFadeIn 0.3s ease',
+      flexDirection: 'column',
+      animation: 'fhFadeIn 0.3s ease',
     });
 
     overlay.innerHTML = `
@@ -636,13 +643,13 @@ function showLockScreen(storedHash) {
         width: 360px;
         text-align: center;
       ">
-        <div style="font-size: 36px; margin-bottom: 16px;">🔐</div>
+        <div style="margin-bottom: 16px; display: flex; justify-content: center; color: var(--color-primary);">${icons.lock(40)}</div>
         <div class="theme-heading-font" style="
           font-size: 20px; font-weight: 700;
           letter-spacing: 0.04em;
           color: var(--color-primary);
           margin-bottom: 6px;
-        ">FoneHisab</div>
+        ">Phone Zone</div>
         <div style="
           font-size: 11px; opacity: 0.35;
           letter-spacing: 0.12em; text-transform: uppercase;
@@ -667,27 +674,27 @@ function showLockScreen(storedHash) {
     `;
     document.body.appendChild(overlay);
 
-    const pwInput  = overlay.querySelector('#lock-pw');
-    const errEl    = overlay.querySelector('#lock-error');
+    const pwInput = overlay.querySelector('#lock-pw');
+    const errEl = overlay.querySelector('#lock-error');
     const unlockBtn = overlay.querySelector('#lock-unlock');
 
     const attempt = async () => {
       const pw = pwInput.value;
       if (!pw) { errEl.textContent = 'Enter your password.'; return; }
 
-      unlockBtn.disabled    = true;
+      unlockBtn.disabled = true;
       unlockBtn.textContent = '…';
 
       const hash = await sha256hex(pw);
       if (hash === storedHash) {
         overlay.style.transition = 'opacity 0.25s ease';
-        overlay.style.opacity    = '0';
+        overlay.style.opacity = '0';
         setTimeout(() => { overlay.remove(); resolve(); }, 260);
       } else {
-        errEl.textContent         = 'Incorrect password.';
-        pwInput.value             = '';
-        unlockBtn.disabled        = false;
-        unlockBtn.textContent     = 'Unlock';
+        errEl.textContent = 'Incorrect password.';
+        pwInput.value = '';
+        unlockBtn.disabled = false;
+        unlockBtn.textContent = 'Unlock';
         // Shake animation on the card
         const card = overlay.querySelector('div > div');
         card.style.animation = 'none';
@@ -712,32 +719,39 @@ function showLockScreen(storedHash) {
   // 1. Load schema (idempotent CREATE TABLE IF NOT EXISTS)
   try {
     const schemaRes = await fetch(new URL('./db/schema.sql', import.meta.url));
-    const sql       = await schemaRes.text();
+    const sql = await schemaRes.text();
     await window.api.db.init(sql);
-    
+
     // Migration: Add amount_paid if missing
     try {
       await window.api.db.run(`ALTER TABLE sales ADD COLUMN amount_paid REAL DEFAULT 0.0`);
       // Backfill amount_paid
       await window.api.db.run(`UPDATE sales SET amount_paid = grand_total WHERE payment_mode != 'Credit'`);
       await window.api.db.run(`UPDATE sales SET amount_paid = 0.0 WHERE payment_mode = 'Credit'`);
-    } catch(e) {
+    } catch (e) {
       // Ignored if column already exists
     }
   } catch (e) {
-    console.error('[FoneHisab] Schema init error:', e);
+    console.error('[Phone Zone] Schema init error:', e);
   }
 
   // 2. Seed default settings (INSERT OR IGNORE)
   const defaults = [
-    ['shop_name',              ''],
-    ['shop_address',           ''],
-    ['shop_gstin',             ''],
-    ['default_gst_rate',       '18.0'],
-    ['app_theme',              'dark'],
-    ['master_password',        ''],
-    ['invoice_daily_counter',  '0'],
-    ['invoice_counter_date',   ''],
+    ['shop_name', ''],
+    ['shop_address', ''],
+    ['shop_gstin', ''],
+    ['shop_email', ''],
+    ['shop_phone', ''],
+    ['default_gst_rate', '18.0'],
+    ['app_theme', 'light'],
+    ['master_password', ''],
+    ['invoice_daily_counter', '0'],
+    ['invoice_counter_date', ''],
+    ['bank_name', ''],
+    ['bank_acc_name', ''],
+    ['bank_acc_no', ''],
+    ['bank_ifsc', ''],
+    ['bank_branch', ''],
   ];
   for (const [key, value] of defaults) {
     await window.api.db.run(
@@ -747,7 +761,7 @@ function showLockScreen(storedHash) {
 
   // 3. Load settings + apply theme before painting
   const settings = await window.getSettings();
-  const theme    = settings.app_theme || 'dark';
+  const theme = settings.app_theme || 'light';
   await window.applyTheme(theme);
 
   // 4. Build shell (sets up DOM)

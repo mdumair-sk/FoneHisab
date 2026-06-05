@@ -13,18 +13,18 @@ export async function initDatabase() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     sql = await res.text();
   } catch (err) {
-    console.error('[FoneHisab] Failed to load schema.sql:', err);
+    console.error('[Phone Zone] Failed to load schema.sql:', err);
     throw err;
   }
 
   const result = await window.api.db.init(sql);
 
   if (!result.ok) {
-    console.error('[FoneHisab] Schema init failed:', result.error);
+    console.error('[Phone Zone] Schema init failed:', result.error);
     throw new Error(result.error);
   }
 
-  console.log('[FoneHisab] Database schema initialised.');
+  console.log('[Phone Zone] Database schema initialised.');
 
   // Seed default settings if not already present
   const defaults = [

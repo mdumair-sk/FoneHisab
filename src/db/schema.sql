@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS items (
     purchase_price   REAL    DEFAULT 0.0,
     sell_price       REAL    DEFAULT 0.0,
     gst_rate         REAL    DEFAULT 18.0,
-    is_margin_scheme INTEGER DEFAULT 0  -- 0 = Standard GST, 1 = Margin Scheme
+    is_margin_scheme INTEGER DEFAULT 0, -- 0 = Standard GST, 1 = Margin Scheme
+    hsn_code         TEXT    NOT NULL DEFAULT '8471'  -- 6-8 digit HSN code
 );
 
 -- 3. Purchase Orders Log (Stock-In Ledger)
@@ -59,6 +60,8 @@ CREATE TABLE IF NOT EXISTS sale_items (
     is_margin_applied INTEGER DEFAULT 0,
     cgst_amount       REAL    NOT NULL,
     sgst_amount       REAL    NOT NULL,
+    imei_number       TEXT    DEFAULT '',  -- Optional 15-digit IMEI tracking
+    item_hsn          TEXT    DEFAULT '',  -- Captured HSN snapshot
     FOREIGN KEY(sale_id) REFERENCES sales(id)  ON DELETE CASCADE,
     FOREIGN KEY(item_id) REFERENCES items(id)  ON DELETE SET NULL
 );

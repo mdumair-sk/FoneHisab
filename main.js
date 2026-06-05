@@ -160,7 +160,7 @@ ipcMain.handle('db:backup', async (_event, savePath) => {
     if (!targetPath) {
       const { canceled, filePath } = await dialog.showSaveDialog({
         title: 'Save Backup',
-        defaultPath: `fonehisab-backup-${Date.now()}.json`,
+        defaultPath: `phone-zone-backup-${Date.now()}.json`,
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
       if (canceled) return { ok: false, error: 'Cancelled' };

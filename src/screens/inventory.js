@@ -1,12 +1,13 @@
 // src/screens/inventory.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FoneHisab — Inventory Screen (3 tabs)
+// Phone Zone — Inventory Screen (3 tabs)
 //   A: View / Edit Inventory
 //   B: Log Stock-In Purchase
 //   C: Sales Returns & Voids
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { printInvoice } from '../utils/print.js';
+import { icons } from '../utils/icons.js';
 
 const CATEGORIES = ['New Phone', 'Accessory', 'Used Phone', 'Repair Service'];
 const PAGE_SIZE  = 50;
@@ -53,7 +54,7 @@ function openModal(html, onMount) {
   backdrop.className = 'fh-modal-backdrop';
   backdrop.innerHTML = `<div class="fh-modal" style="max-width:520px;width:94%;">${html}</div>`;
   document.body.appendChild(backdrop);
-  backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+  backdrop.addEventListener('click', e => { /* Backdrop click does NOT dismiss — anti-data-loss */ });
   if (onMount) onMount(backdrop);
   return backdrop;
 }
@@ -143,6 +144,7 @@ function renderTableA(container) {
   const cols = [
     { key: 'name',           label: 'Name'           },
     { key: 'category',       label: 'Category'       },
+    { key: 'hsn_code',       label: 'HSN'            },
     { key: 'stock_qty',      label: 'Stock'          },
     { key: 'purchase_price', label: 'Purchase (₹)'   },
     { key: 'sell_price',     label: 'Sell (₹)'       },
@@ -163,18 +165,15 @@ function renderTableA(container) {
       </thead>
       <tbody>
         ${rows.length === 0 ? `
-          <tr><td colspan="8" style="padding:40px;text-align:center;opacity:0.3;font-size:12px;letter-spacing:0.1em;">
+          <tr><td colspan="9" style="padding:40px;text-align:center;opacity:0.3;font-size:12px;letter-spacing:0.1em;">
             No items found
           </td></tr>` :
           rows.map((item, i) => `
-            <tr data-item-id="${item.id}"
+            <tr data-item-id="${item.id}" class="fh-table-row"
               style="
                 border-bottom:1px solid var(--color-border);
                 background:${i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)'};
-                transition:background 0.1s;
-              "
-              onmouseover="this.style.background='rgba(0,255,178,0.04)'"
-              onmouseout="this.style.background='${i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)'}'">
+              ">
               <td style="padding:10px 14px;font-weight:500;">${esc(item.name)}</td>
               <td style="padding:10px 14px;">
                 <span style="
@@ -184,6 +183,7 @@ function renderTableA(container) {
                   color:#0D0D0D;font-weight:600;
                 ">${esc(item.category)}</span>
               </td>
+              <td style="padding:10px 14px;font-size:12px;font-variant-numeric:tabular-nums;opacity:0.7;">${esc(item.hsn_code || '8471')}</td>
               <td style="padding:10px 14px;font-variant-numeric:tabular-nums;
                 color:${item.stock_qty === 0 ? '#FF4444' : item.stock_qty < 3 ? '#FF8C00' : 'inherit'}; font-weight:600;">
                 ${item.stock_qty}
@@ -211,11 +211,15 @@ function renderTableA(container) {
       <span>${total} item${total !== 1 ? 's' : ''} — Page ${state.pageA} of ${pages}</span>
       <div style="display:flex;gap:8px;">
         <button class="fh-btn fh-btn-ghost" id="page-prev"
-          style="padding:5px 14px;font-size:11px;"
-          ${state.pageA <= 1 ? 'disabled style="opacity:0.25;cursor:not-allowed;padding:5px 14px;font-size:11px;"' : ''}>← Prev</button>
+          style="padding:5px 14px;font-size:11px;display:flex;align-items:center;gap:4px;"
+          ${state.pageA <= 1 ? 'disabled style="opacity:0.25;cursor:not-allowed;padding:5px 14px;font-size:11px;"' : ''}>
+          ${icons.chevronLeft(12)} Prev
+        </button>
         <button class="fh-btn fh-btn-ghost" id="page-next"
-          style="padding:5px 14px;font-size:11px;"
-          ${state.pageA >= pages ? 'disabled style="opacity:0.25;cursor:not-allowed;padding:5px 14px;font-size:11px;"' : ''}>Next →</button>
+          style="padding:5px 14px;font-size:11px;display:flex;align-items:center;gap:4px;"
+          ${state.pageA >= pages ? 'disabled style="opacity:0.25;cursor:not-allowed;padding:5px 14px;font-size:11px;"' : ''}>
+          Next ${icons.chevronRight(12)}
+        </button>
       </div>
     </div>
   `;
@@ -266,8 +270,8 @@ function itemModalHTML(item) {
   const cat    = item?.category ?? 'New Phone';
   const isUsed = cat === 'Used Phone';
   return `
-    <div class="fh-card-title" style="margin-bottom:20px;">
-      ${isEdit ? '✏️ Edit Item' : '➕ New Item'}
+    <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:20px;">
+      ${isEdit ? icons.edit(14) : icons.plus(14)} ${isEdit ? 'Edit Item' : 'New Item'}
     </div>
 
     <div class="fh-field">
@@ -297,7 +301,7 @@ function itemModalHTML(item) {
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:flex-end;">
       <div class="fh-field">
         <label class="fh-label">Purchase Price (₹)</label>
         <input id="im-purchase" class="fh-input" type="number" min="0" step="0.01"
@@ -312,6 +316,14 @@ function itemModalHTML(item) {
         <label class="fh-label">GST Rate (%)</label>
         <input id="im-gst" class="fh-input" type="number" min="0" max="100" step="0.5"
           value="${item?.gst_rate ?? 18}" />
+      </div>
+      <div class="fh-field">
+        <label class="fh-label">HSN Code</label>
+        <input id="im-hsn" class="fh-input" type="text"
+          placeholder="e.g. 8517"
+          value="${esc(item?.hsn_code ?? '8471')}"
+          maxlength="8"
+          style="font-variant-numeric:tabular-nums;letter-spacing:0.06em;" />
       </div>
     </div>
 
@@ -366,6 +378,7 @@ function openItemModal(item, container) {
         sell_price:      parseFloat(m.querySelector('#im-sell').value) || 0,
         gst_rate:        parseFloat(m.querySelector('#im-gst').value) || 18,
         is_margin_scheme: marginCb.checked ? 1 : 0,
+        hsn_code:        m.querySelector('#im-hsn').value.trim() || '8471',
       };
 
       let res;
@@ -373,18 +386,18 @@ function openItemModal(item, container) {
         res = await window.api.db.run(`
           UPDATE items SET
             name=?, category=?, purchase_price=?, sell_price=?,
-            gst_rate=?, is_margin_scheme=?
+            gst_rate=?, is_margin_scheme=?, hsn_code=?
           WHERE id=?`,
           [payload.name, payload.category, payload.purchase_price,
-           payload.sell_price, payload.gst_rate, payload.is_margin_scheme, item.id]
+           payload.sell_price, payload.gst_rate, payload.is_margin_scheme, payload.hsn_code, item.id]
         );
       } else {
         const stock = parseInt(m.querySelector('#im-stock').value) || 0;
         res = await window.api.db.run(`
-          INSERT INTO items (name, category, stock_qty, purchase_price, sell_price, gst_rate, is_margin_scheme)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          INSERT INTO items (name, category, stock_qty, purchase_price, sell_price, gst_rate, is_margin_scheme, hsn_code)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
           [payload.name, payload.category, stock, payload.purchase_price,
-           payload.sell_price, payload.gst_rate, payload.is_margin_scheme]
+           payload.sell_price, payload.gst_rate, payload.is_margin_scheme, payload.hsn_code]
         );
       }
 
@@ -403,11 +416,18 @@ function buildTabA(container) {
   wrap.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;
       margin-bottom:18px;gap:14px;flex-wrap:wrap;">
-      <input id="inv-search" class="fh-input" type="search"
-        placeholder="🔍  Search by name…"
-        style="max-width:300px;flex:1;"
-        value="${esc(state.searchA)}" />
-      <button class="fh-btn fh-btn-primary" id="btn-new-item">➕ New Item</button>
+      <div style="position:relative;max-width:300px;flex:1;">
+        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; align-items: center; pointer-events: none;">
+          ${icons.search(14)}
+        </span>
+        <input id="inv-search" class="fh-input" type="search"
+          placeholder="Search by name…"
+          style="padding-left:34px;"
+          value="${esc(state.searchA)}" />
+      </div>
+      <button class="fh-btn fh-btn-primary" id="btn-new-item" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.plus(14)} New Item
+      </button>
     </div>
     <div id="inv-table-wrap"></div>
   `;
@@ -429,7 +449,9 @@ function buildTabB(container) {
   const wrap = container.querySelector('#tab-b');
   wrap.innerHTML = `
     <div class="fh-card" style="max-width:560px;">
-      <div class="fh-card-title">📥 Log Stock-In Purchase</div>
+      <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.inventory(14)} Log Stock-In Purchase
+      </div>
 
       <div class="fh-field">
         <label class="fh-label">Item</label>
@@ -469,8 +491,8 @@ function buildTabB(container) {
       <div id="pur-error" style="color:#FF4444;font-size:11px;min-height:16px;margin-bottom:10px;"></div>
 
       <div style="display:flex;justify-content:flex-end;">
-        <button class="fh-btn fh-btn-primary" id="btn-log-purchase" style="min-width:140px;">
-          💾 Log Purchase
+        <button class="fh-btn fh-btn-primary" id="btn-log-purchase" style="min-width:140px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+          ${icons.save(14)} Log Purchase
         </button>
       </div>
     </div>
@@ -490,14 +512,11 @@ function buildTabB(container) {
     if (!matches.length || !q) { dropdown.style.display = 'none'; return; }
 
     dropdown.innerHTML = matches.map(i => `
-      <div data-id="${i.id}" data-name="${esc(i.name)}"
+      <div data-id="${i.id}" data-name="${esc(i.name)}" class="fh-table-row"
         style="
           padding:10px 14px;cursor:pointer;font-size:13px;
           border-bottom:1px solid var(--color-border);
-          transition:background 0.1s;
-        "
-        onmouseover="this.style.background='rgba(0,255,178,0.07)'"
-        onmouseout="this.style.background=''">
+        ">
         <span style="font-weight:500;">${esc(i.name)}</span>
         <span style="font-size:10px;opacity:0.45;margin-left:8px;">${esc(i.category)}</span>
         <span style="float:right;font-size:11px;opacity:0.5;">Stock: ${i.stock_qty}</span>
@@ -610,14 +629,11 @@ function renderTableC(container) {
             No active invoices found
           </td></tr>` :
           rows.map((s, i) => `
-            <tr data-sale-id="${s.id}"
+            <tr data-sale-id="${s.id}" class="fh-table-row"
               style="
                 border-bottom:1px solid var(--color-border);
                 background:${i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)'};
-                transition:background 0.1s;
-              "
-              onmouseover="this.style.background='rgba(0,255,178,0.03)'"
-              onmouseout="this.style.background='${i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)'}'">
+              ">
               <td style="padding:10px 14px;font-variant-numeric:tabular-nums;">
                 <span class="inv-link" data-sale-id="${s.id}" style="
                   color: var(--color-primary); cursor: pointer; font-weight: 600;
@@ -755,7 +771,9 @@ async function openInvoiceDetailModal(saleId, container) {
 
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="fh-btn fh-btn-ghost" id="inv-detail-close">Close</button>
-      <button class="fh-btn fh-btn-primary" id="inv-detail-print">🖨 Print Invoice</button>
+      <button class="fh-btn fh-btn-primary" id="inv-detail-print" style="display: flex; align-items: center; gap: 8px;">
+        ${icons.print(14)} Print Invoice
+      </button>
     </div>
   `, (m) => {
     m.querySelector('.fh-modal').style.maxWidth = '680px';
@@ -775,7 +793,9 @@ async function openVoidModal(sale, container) {
   const lineItems = await fetchSaleItems(sale.id);
 
   openModal(`
-    <div class="fh-card-title" style="margin-bottom:16px;color:#FF8C00;">⚠ Void Invoice</div>
+    <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:16px;color:#FF8C00;">
+      ${icons.alert(14)} Void Invoice
+    </div>
     <div style="font-size:13px;margin-bottom:16px;line-height:1.7;opacity:0.8;">
       Invoice <strong style="color:var(--color-primary);">${esc(sale.invoice_number)}</strong>
       — ${esc(sale.customer_name ?? 'Walk-in Customer')}
@@ -835,7 +855,9 @@ async function openRefundModal(sale, container) {
   const lineItems = await fetchSaleItems(sale.id);
 
   openModal(`
-    <div class="fh-card-title" style="margin-bottom:16px;color:var(--color-primary);">↩ Refund Invoice</div>
+    <div class="fh-card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom:16px;color:var(--color-primary);">
+      ${icons.refund(14)} Refund Invoice
+    </div>
     <div style="font-size:13px;margin-bottom:16px;opacity:0.8;">
       Invoice <strong style="color:var(--color-primary);">${esc(sale.invoice_number)}</strong>
       — <strong>₹${fmt(sale.grand_total)}</strong>
@@ -916,9 +938,14 @@ function buildTabC(container) {
   wrap.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;
       margin-bottom:18px;gap:14px;flex-wrap:wrap;">
-      <input id="returns-search" class="fh-input" type="search"
-        placeholder="🔍  Search by invoice number or customer…"
-        style="max-width:360px;flex:1;" />
+      <div style="position:relative;max-width:360px;flex:1;">
+        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; align-items: center; pointer-events: none;">
+          ${icons.search(14)}
+        </span>
+        <input id="returns-search" class="fh-input" type="search"
+          placeholder="Search by invoice number or customer…"
+          style="padding-left:34px;" />
+      </div>
       <span style="font-size:11px;opacity:0.35;letter-spacing:0.06em;">
         Showing Active invoices only
       </span>
@@ -984,12 +1011,13 @@ export async function renderInventory(container) {
       <!-- Tab pills -->
       <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
         ${[
-          ['a', '📋 View / Edit Items'],
-          ['b', '📥 Log Purchase'],
-          ['c', '↩ Returns & Voids'],
+          ['a', `${icons.fileText(14)} View / Edit Items`],
+          ['b', `${icons.plus(14)} Log Purchase`],
+          ['c', `${icons.refund(14)} Returns &amp; Voids`],
         ].map(([t, label]) => `
           <button data-tab="${t}" class="fh-btn"
             style="
+              display:flex;align-items:center;gap:8px;
               padding:9px 20px;border:1px solid var(--color-border);
               border-radius:30px;font-size:12px;letter-spacing:0.07em;
               transition:all 0.15s;
