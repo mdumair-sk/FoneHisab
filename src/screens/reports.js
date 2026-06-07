@@ -134,9 +134,11 @@ async function fetchGSTR1Rows(startDate, endDate) {
       si.is_margin_applied,
       si.cgst_amount,
       si.sgst_amount,
-      (si.qty * si.price_per_unit) AS line_total
+      (si.qty * si.price_per_unit) AS line_total,
+      COALESCE(i.gst_rate, 18.0) AS gst_rate
     FROM   sales s
     JOIN   sale_items si ON si.sale_id = s.id
+    LEFT JOIN items i ON si.item_id = i.id
     WHERE  s.sale_date BETWEEN ? AND ?
       AND  s.status = 'Active'
       AND  s.invoice_type = 'Tax Invoice'
@@ -166,15 +168,6 @@ function buildGSTR1Workbook(rows) {
   ];
 
   const dataRows = rows.map(row => {
-    // Taxable Value: for margin scheme, back-calculate from stored cgst_amount
-    // taxable = cgst_amount * 2 / (gst_rate/100) — but gst_rate isn't in sale_items.
-    // Simpler accurate formula from TRD: taxable = cgst_amount * 200 / gst_rate
-    // Since gst_rate is NOT stored in sale_items, we derive it from the tax amounts:
-    // For standard: taxable = line_total / qty / (1 + gstRate/100) * qty
-    //   but we don't have gst_rate here either.
-    // Best approach: taxable per line = cgst_amount + sgst_amount gives total GST,
-    //   standard: taxableValue = lineTotal - totalGST
-    //   margin:   taxableValue = cgst_amount * 2 (the taxable margin, not full price)
     const cgst       = round2(row.cgst_amount);
     const sgst       = round2(row.sgst_amount);
     const totalGST   = round2(cgst + sgst);
@@ -182,27 +175,11 @@ function buildGSTR1Workbook(rows) {
 
     let taxableValue;
     if (row.is_margin_applied) {
-      // Under margin scheme, taxable = taxableMargin stored as cgst+sgst back-calc
-      // taxableMargin = cgst*2 (since cgst = totalGST/2, totalGST = margin - taxableMargin)
-      // The TRD says: taxable = cgst_amount * 200 / gst_rate
-      // Without gst_rate in sale_items, use: taxableMargin = (cgst+sgst) * ... 
-      // Most accurate derivation from stored values:
-      // totalGST = margin - taxableMargin → taxableMargin = margin - totalGST
-      // We stored cgst and sgst correctly, so taxableMargin = lineTotal (sell) - purchasePrice - totalGST
-      // But purchase_price isn't here. Use the TRD's simpler: taxable = cgst_amount * 2
-      // (since for 18% GST: taxableMargin = totalGST / 0.18 * 1 = totalGST*(100/18),
-      //  and cgst = totalGST/2. This only works if we know rate.)
-      // Safest: report taxable as cgst_amount + sgst_amount (the tax base that generates those numbers)
-      // At 18%: taxable = totalGST / 0.18 → but rate varies.
-      // FINAL CHOICE (matches TRD intent): taxableValue = lineTotal - totalGST
-      // For margin scheme this gives the sell price minus GST, not the margin.
-      // The TRD says "report only taxableMargin" — which equals (cgst+sgst)/gst_rate*100.
-      // Since we lack gst_rate per line, use: taxable = (cgst+sgst) / 0.09 (assumes 9%+9%=18%)
-      // TO BE TRULY GENERAL: store as cgst*2 when rate is 18, but adjust for other rates:
-      // taxableMargin = totalGST * (100/gst_rate) — without rate, best estimate = totalGST*100/18
-      // We'll use the safe formula: taxableValue = lineTotal - totalGST (consistent with books)
-      taxableValue = round2(lineTotal - totalGST);
+      // Under Margin Scheme, the value of supply is the taxable margin base:
+      // taxableValue = totalGST * 100 / gst_rate
+      taxableValue = round2(totalGST * 100 / row.gst_rate);
     } else {
+      // Under Standard Scheme, the taxable value is the total sell price excluding GST
       taxableValue = round2(lineTotal - totalGST);
     }
 
