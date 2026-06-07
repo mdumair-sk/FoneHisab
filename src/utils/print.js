@@ -254,13 +254,19 @@ export async function printInvoice(saleId, settings) {
 <body>
 
   <!-- Shop Header -->
-  <div style="text-align:center;margin-bottom:12px;position:relative;z-index:1;">
-    <div style="font-size:22px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#000;">${escPrint(shopName)}</div>
-    ${shopAddress ? `<div style="font-size:11px;color:#333;margin-top:4px;white-space:pre-line;">${escPrint(shopAddress)}</div>` : ''}
-    <div style="font-size:11px;margin-top:4px;color:#333;">
-      ${shopPhone ? `Phone: ${escPrint(shopPhone)}` : ''}${shopPhone && shopEmail ? ' | ' : ''}${shopEmail ? `Email: ${escPrint(shopEmail)}` : ''}
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;position:relative;z-index:1;">
+    <div style="width: 80px; display:flex; justify-content:flex-start;">
+      <img src="${logoUrl}" style="width: 70px; height: 70px; object-fit: contain; filter: invert(1) grayscale(1);" />
     </div>
-    ${(shopGstin && !isEstimate) ? `<div style="font-size:12px;margin-top:4px;color:#000;"><strong>GSTIN: ${escPrint(shopGstin)}</strong></div>` : ''}
+    <div style="text-align:center; flex:1;">
+      <div style="font-size:22px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#000;">${escPrint(shopName)}</div>
+      ${shopAddress ? `<div style="font-size:11px;color:#333;margin-top:4px;white-space:pre-line;">${escPrint(shopAddress)}</div>` : ''}
+      <div style="font-size:11px;margin-top:4px;color:#333;">
+        ${shopPhone ? `Phone: ${escPrint(shopPhone)}` : ''}${shopPhone && shopEmail ? ' | ' : ''}${shopEmail ? `Email: ${escPrint(shopEmail)}` : ''}
+      </div>
+      ${(shopGstin && !isEstimate) ? `<div style="font-size:12px;margin-top:4px;color:#000;"><strong>GSTIN: ${escPrint(shopGstin)}</strong></div>` : ''}
+    </div>
+    <div style="width: 80px;"></div>
   </div>
 
   <hr class="divider-bold"/>
